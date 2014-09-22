@@ -19,17 +19,63 @@ window.gameRuntime = (function() {
     marker.lineStyle(2, 0xFFFFFF, 1);
     marker.drawRect(0, 0, 32, 32);
 
+    placing = null;
     cursors = game.input.keyboard.createCursorKeys();
+
+    actions = {
+      rotate: game.input.keyboard.addKey(Phaser.Keyboard.R),
+      place_orbital: game.input.keyboard.addKey(Phaser.Keyboard.O),
+      cancel: game.input.keyboard.addKey(Phaser.Keyboard.ESC),
+    };
+  }
+
+  function createDockSilhouette() {
+    orbitalGroup = game.add.group();
+    orbitalGroup.pivot.x = (32 * 3) / 2;
+    orbitalGroup.pivot.y = (32 * 5) / 2;
+
+    orbital = game.add.graphics(0, 0, orbitalGroup);
+    orbital.lineStyle(2, 0xFF00FF, 1);
+    orbital.drawRect(0, 0, 32 * 3, 32 * 4);
+
+    orbitalLoadZone = game.add.graphics(0, 128, orbitalGroup);
+    orbitalLoadZone.lineStyle(2, 0x00FF00, 1);
+    orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);
+
+    return orbitalGroup;
   }
 
   function update() {
     marker.x = layer.getTileX(game.input.activePointer.worldX) * 32;
     marker.y = layer.getTileY(game.input.activePointer.worldY) * 32;
-
+    
     if (cursors.left.isDown) {
       game.camera.x -= 4;
     } else if (cursors.right.isDown) {
       game.camera.x += 4;
+    }
+
+    if (actions.rotate.isDown && actions.rotate.repeats == 0 && placing) {
+      placing.rotation += -Math.PI / 2;
+    }
+
+    if (actions.place_orbital.isDown && actions.place_orbital.repeats == 0 && !placing) {
+      console.log('Placing Orbital Dock');
+      placing = createDockSilhouette();
+    }
+
+    if (actions.cancel.isDown && actions.cancel.repeats == 0) {
+      console.log('CANCELLED');
+      
+      if (placing) {
+        placing.destroy();
+        placing = null;
+      }
+    }
+
+    if (placing) {
+      placing.x = marker.x + 16;
+      placing.y = marker.y + 16;
     }
 
     if (cursors.up.isDown) {
