@@ -25,7 +25,7 @@ window.gameRuntime = (function() {
     cursors = game.input.keyboard.createCursorKeys();
 
     actions = {
-      rotate: game.input.keyboard.addKey(Phaser.Keyboard.R),
+      rotate: game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR ),
       place_orbital: game.input.keyboard.addKey(Phaser.Keyboard.O),
       place_wall: game.input.keyboard.addKey(Phaser.Keyboard.W),
       place_door: game.input.keyboard.addKey(Phaser.Keyboard.D),
