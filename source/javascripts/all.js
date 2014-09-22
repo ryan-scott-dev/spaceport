@@ -61,27 +61,27 @@ window.gameRuntime = (function() {
     });
   };
 
-  function addBuilding(building) {
-    switch (building.type) {
+  function createBuilding(type, placed, x, y, rotation) {
+    switch (type) {
       case 'wall': {
-        var wall = createWallSilhouette(building.x, building.y, building.rotation, true);
-        this.buildings.push(wall);
-        break;
+        return createWallSilhouette(x, y, rotation, placed);
       }
       case 'orbital': {
-        var orbital = createOrbitalSilhouette(building.x, building.y, building.rotation, true);
-        this.buildings.push(orbital);
-        break;
+        return createOrbitalSilhouette(x, y, rotation, placed);
       }
       case 'door': {
-        var door = createDoorSilhouette(building.x, building.y, building.rotation, true);
-        this.buildings.push(door);
-        break;
+        return createDoorSilhouette(x, y, rotation, placed);
       }
       default: {
-        console.error("Unable to create building of type '" + building.type + "'");
+        console.error("Unable to create building of type '" + type + "'");
       }
     }
+    return null;
+  }
+
+  function addBuilding(buildingTemplate) {
+    var newBuilding = createBuilding(buildingTemplate.type, true, buildingTemplate.x, buildingTemplate.y, buildingTemplate.rotation); 
+    this.buildings.push(newBuilding);
   };
 
   function createOrbitalSilhouette(x, y, rotation, placed) {
@@ -103,7 +103,7 @@ window.gameRuntime = (function() {
       orbital.endFill();
     } else {
       var orbitalLoadZone = game.add.graphics(0, 128, orbitalGroup);
-      orbitalLoadZone.lineStyle(1, 0x00FF00, 1);
+      orbitalLoadZone.lineStyle(1, 0x00FF00, 0.5);
       orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);  
     }
     
@@ -155,11 +155,11 @@ window.gameRuntime = (function() {
 
     if (!placed) {
       var doorTriggerZone1 = game.add.graphics(0, -32, doorGroup);
-      doorTriggerZone1.lineStyle(1, 0x00FF00, 1);
+      doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
       doorTriggerZone1.drawRect(0, 0, 32 * 3, 32);
 
       var doorTriggerZone2 = game.add.graphics(0, 0, doorGroup);
-      doorTriggerZone2.lineStyle(1, 0x00FF00, 1);
+      doorTriggerZone2.lineStyle(1, 0x00FF00, 0.5);
       doorTriggerZone2.drawRect(0, 0, 32 * 3, 32);
     }
 
@@ -180,59 +180,56 @@ window.gameRuntime = (function() {
     return doorGroup;
   }
 
-  function update() {
+  function updateMarker() {
     marker.x = layer.getTileX(game.input.activePointer.worldX) * 32;
     marker.y = layer.getTileY(game.input.activePointer.worldY) * 32;
-    
+    marker.visible = (placing == null);
+  }
+
+  function rotateBuilding() {
+    if (!placing) return;
+
+    placing.rotation += Math.PI / 2;
+  }
+
+  function placeBuilding() {
+    if (!placing) return;
+
+    console.log('Placed Building');
+    addBuilding(placing);
+    save();
+    /* TODO - Register building created */
+    /* TODO - Make Sound Effect */
+    /* TODO - Remove silhouette and add 'proper' implementation */
+
+    stopPlacingBuilding();
+  }
+
+  function startPlacingBuilding(type) {
+    if (placing) return;
+
+    placing = createBuilding(type);
+  }
+
+  function stopPlacingBuilding() {
+    if (!placing) return;
+
+    placing.destroy();
+    placing = null;
+  }
+
+  function updatePlacingBuilding() {
+    if (!placing) return;
+
+    placing.x = marker.x + 16;
+    placing.y = marker.y + 16;
+  }
+
+  function updateCamera() {
     if (cursors.left.isDown) {
       game.camera.x -= 4;
     } else if (cursors.right.isDown) {
       game.camera.x += 4;
-    }
-
-    if (actions.rotate.isDown && actions.rotate.repeats == 0 && placing) {
-      placing.rotation += Math.PI / 2;
-    }
-
-    if (actions.place.isDown && actions.place.repeats == 0 && placing) {
-      console.log('Placed Building');
-      addBuilding(placing);
-      save();
-      /* TODO - Register building created */
-      /* TODO - Make Sound Effect */
-      /* TODO - Remove silhouette and add 'proper' implementation */
-
-      placing.destroy();
-      placing = null;
-    }
-
-    if (actions.place_orbital.isDown && actions.place_orbital.repeats == 0 && !placing) {
-      console.log('Placing Orbital Dock');
-      placing = createOrbitalSilhouette();
-    }
-
-    if (actions.place_wall.isDown && actions.place_wall.repeats == 0 && !placing) {
-      console.log('Placing Wall');
-      placing = createWallSilhouette();
-    }
-
-    if (actions.place_door.isDown && actions.place_door.repeats == 0 && !placing) {
-      console.log('Placing Door');
-      placing = createDoorSilhouette();
-    }
-
-    if (actions.cancel.isDown && actions.cancel.repeats == 0) {
-      console.log('CANCELLED');
-      
-      if (placing) {
-        placing.destroy();
-        placing = null;
-      }
-    }
-
-    if (placing) {
-      placing.x = marker.x + 16;
-      placing.y = marker.y + 16;
     }
 
     if (cursors.up.isDown) {
@@ -240,6 +237,37 @@ window.gameRuntime = (function() {
     } else if (cursors.down.isDown) {
       game.camera.y += 4;
     }
+  }
+
+  function update() {
+    if (actions.rotate.isDown && actions.rotate.repeats == 0) {
+      rotateBuilding();
+    }
+
+    if (actions.place.isDown && actions.place.repeats == 0) {
+      placeBuilding();
+    }
+
+    if (actions.place_orbital.isDown && actions.place_orbital.repeats == 0) {
+      startPlacingBuilding('orbital');
+    }
+
+    if (actions.place_wall.isDown && actions.place_wall.repeats == 0) {
+      startPlacingBuilding('wall');
+    }
+
+    if (actions.place_door.isDown && actions.place_door.repeats == 0) {
+      startPlacingBuilding('door');
+    }
+
+    if (actions.cancel.isDown && actions.cancel.repeats == 0) {
+      stopPlacingBuilding();
+    }
+
+    updatePlacingBuilding();
+
+    updateCamera();
+    updateMarker();
   }
 
   var game = new Phaser.Game('100', '100', Phaser.AUTO, $('.canvas_container')[0], { 
