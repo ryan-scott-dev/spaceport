@@ -114,9 +114,10 @@ window.gameRuntime = (function() {
     wall.y = y || 0;
     wall.rotation = rotation || 0;
     wall.pivot.x = (32 * 1) / 2;
-    wall.pivot.y = (32 * 1) / 2;
+    wall.pivot.y = 16;
     wall.lineStyle(2, 0xFF1D3D, 1);
-    wall.drawRect(0, 0, 32 * 1, 32 * 1);
+    wall.moveTo(0, 0);
+    wall.lineTo(32 * 1, 0);
 
     wall.serialize = function() {
       return {
@@ -135,10 +136,11 @@ window.gameRuntime = (function() {
     door.x = x || 0;
     door.y = y || 0;
     door.rotation = rotation || 0;
-    door.pivot.x = (32 * 1) - 16;
-    door.pivot.y = (32 * 1) / 2;
+    door.pivot.x = (32 * 3) / 2;
+    door.pivot.y = 16;
     door.lineStyle(2, 0x1D3DFF, 1);
-    door.drawRect(0, 0, 32 * 2, 32 * 1);
+    door.moveTo(0, 0);
+    door.lineTo(32 * 3, 0);
 
     door.serialize = function() {
       return {
@@ -163,7 +165,7 @@ window.gameRuntime = (function() {
     }
 
     if (actions.rotate.isDown && actions.rotate.repeats == 0 && placing) {
-      placing.rotation += -Math.PI / 2;
+      placing.rotation += Math.PI / 2;
     }
 
     if (actions.place.isDown && actions.place.repeats == 0 && placing) {
