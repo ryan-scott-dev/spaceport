@@ -33,8 +33,11 @@ window.gameRuntime = (function() {
     };
   }
 
-  function createDockSilhouette() {
+  function createDockSilhouette(x, y, rotation) {
     orbitalGroup = game.add.group();
+    orbitalGroup.x = x || 0;
+    orbitalGroup.y = y || 0;
+    orbitalGroup.rotation = rotation || 0;
     orbitalGroup.pivot.x = (32 * 3) / 2;
     orbitalGroup.pivot.y = (32 * 5) / 2;
 
@@ -49,8 +52,11 @@ window.gameRuntime = (function() {
     return orbitalGroup;
   }
 
-  function createWallSilhouette() {
+  function createWallSilhouette(x, y, rotation) {
     wall = game.add.graphics();
+    wall.x = x || 0;
+    wall.y = y || 0;
+    wall.rotation = rotation || 0;
     wall.pivot.x = (32 * 1) / 2;
     wall.pivot.y = (32 * 1) / 2;
     wall.lineStyle(2, 0xFF1D3D, 1);
@@ -59,8 +65,11 @@ window.gameRuntime = (function() {
     return wall;
   }
 
-  function createDoorSilhouette() {
+  function createDoorSilhouette(x, y, rotation) {
     door = game.add.graphics();
+    door.x = x || 0;
+    door.y = y || 0;
+    door.rotation = rotation || 0;
     door.pivot.x = (32 * 1) - 16;
     door.pivot.y = (32 * 1) / 2;
     door.lineStyle(2, 0x1D3DFF, 1);
