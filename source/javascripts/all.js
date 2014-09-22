@@ -6,6 +6,7 @@ window.gameRuntime = (function() {
   }
 
   function create() {
+    game.scale.scaleMode = Phaser.ScaleManager.RESIZE;
     game.stage.backgroundColor = '#2d2d2d';
 
     map = game.add.tilemap();
@@ -51,7 +52,7 @@ window.gameRuntime = (function() {
 
     orbitalGroup.serialize = function() {
       return {
-        type: 'orbital'
+        type: 'orbital',
         x: orbitalGroup.x,
         y: orbitalGroup.y,
         rotation: orbitalGroup.rotation,
@@ -73,7 +74,7 @@ window.gameRuntime = (function() {
 
     wall.serialize = function() {
       return {
-        type: 'wall'
+        type: 'wall',
         x: wall.x,
         y: wall.y,
         rotation: wall.rotation,
@@ -95,7 +96,7 @@ window.gameRuntime = (function() {
 
     door.serialize = function() {
       return {
-        type: 'door'
+        type: 'door',
         x: door.x,
         y: door.y,
         rotation: door.rotation,
@@ -165,7 +166,7 @@ window.gameRuntime = (function() {
     }
   }
 
-  var game = new Phaser.Game(800, 600, Phaser.AUTO, 'phaser-stage', { 
+  var game = new Phaser.Game('100', '100', Phaser.AUTO, $('.canvas_container')[0], { 
     preload: preload, 
     create: create, 
     update: update 
