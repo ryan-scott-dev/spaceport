@@ -20,6 +20,7 @@ window.gameRuntime = (function() {
     marker.lineStyle(2, 0xFFFFFF, 1);
     marker.drawRect(0, 0, 32, 32);
 
+    buildings = [];
     placing = null;
     cursors = game.input.keyboard.createCursorKeys();
 
@@ -32,30 +33,75 @@ window.gameRuntime = (function() {
       cancel: game.input.keyboard.addKey(Phaser.Keyboard.ESC),
       place: game.input.keyboard.addKey(Phaser.Keyboard.ENTER),
     };
+
+    load();
   }
 
-  function createDockSilhouette(x, y, rotation) {
-    orbitalGroup = game.add.group();
+  function load() {
+    var state = JSON.parse(localStorage.getItem('game.state'));
+    fromGameState(state || {});
+  }
+
+  function save() {
+    var state = gameState();
+    localStorage.setItem('game.state', JSON.stringify(state));
+  }
+
+  function gameState() {
+    return {
+      buildings: this.buildings.map(function(building) { return building.serialize(); })
+    }
+  }
+
+  function fromGameState(state) {
+    state.buildings = state.buildings || [];
+
+    state.buildings.forEach(function(building) {
+      switch (building.type) {
+        case 'wall': {
+          var wall = createWallSilhouette(building.x, building.y, building.rotation);
+          this.buildings.push(wall);
+          break;
+        }
+        case 'orbital': {
+          var orbital = createOrbitalSilhouette(building.x, building.y, building.rotation);
+          this.buildings.push(orbital);
+          break;
+        }
+        case 'door': {
+          var door = createDoorSilhouette(building.x, building.y, building.rotation);
+          this.buildings.push(door);
+          break;
+        }
+        default: {
+          console.error("Unable to create building of type '" + building.type + "'");
+        }
+      }
+    });
+  }
+
+  function createOrbitalSilhouette(x, y, rotation) {
+    var orbitalGroup = game.add.group();
     orbitalGroup.x = x || 0;
     orbitalGroup.y = y || 0;
     orbitalGroup.rotation = rotation || 0;
     orbitalGroup.pivot.x = (32 * 3) / 2;
     orbitalGroup.pivot.y = (32 * 5) / 2;
 
-    orbital = game.add.graphics(0, 0, orbitalGroup);
+    var orbital = game.add.graphics(0, 0, orbitalGroup);
     orbital.lineStyle(2, 0xFF00FF, 1);
     orbital.drawRect(0, 0, 32 * 3, 32 * 4);
 
-    orbitalLoadZone = game.add.graphics(0, 128, orbitalGroup);
+    var orbitalLoadZone = game.add.graphics(0, 128, orbitalGroup);
     orbitalLoadZone.lineStyle(2, 0x00FF00, 1);
     orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);
 
     orbitalGroup.serialize = function() {
       return {
         type: 'orbital',
-        x: orbitalGroup.x,
-        y: orbitalGroup.y,
-        rotation: orbitalGroup.rotation,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
       };
     };
 
@@ -63,7 +109,7 @@ window.gameRuntime = (function() {
   }
 
   function createWallSilhouette(x, y, rotation) {
-    wall = game.add.graphics();
+    var wall = game.add.graphics();
     wall.x = x || 0;
     wall.y = y || 0;
     wall.rotation = rotation || 0;
@@ -75,9 +121,9 @@ window.gameRuntime = (function() {
     wall.serialize = function() {
       return {
         type: 'wall',
-        x: wall.x,
-        y: wall.y,
-        rotation: wall.rotation,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
       };
     };
 
@@ -85,7 +131,7 @@ window.gameRuntime = (function() {
   }
 
   function createDoorSilhouette(x, y, rotation) {
-    door = game.add.graphics();
+    var door = game.add.graphics();
     door.x = x || 0;
     door.y = y || 0;
     door.rotation = rotation || 0;
@@ -97,9 +143,9 @@ window.gameRuntime = (function() {
     door.serialize = function() {
       return {
         type: 'door',
-        x: door.x,
-        y: door.y,
-        rotation: door.rotation,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
       };
     };
 
@@ -123,6 +169,8 @@ window.gameRuntime = (function() {
     if (actions.place.isDown && actions.place.repeats == 0 && placing) {
       console.log('Placed Building');
       
+      buildings.push(placing);
+      save();
       /* TODO - Register building created */
       /* TODO - Make Sound Effect */
       /* TODO - Remove silhouette and add 'proper' implementation */
@@ -132,7 +180,7 @@ window.gameRuntime = (function() {
 
     if (actions.place_orbital.isDown && actions.place_orbital.repeats == 0 && !placing) {
       console.log('Placing Orbital Dock');
-      placing = createDockSilhouette();
+      placing = createOrbitalSilhouette();
     }
 
     if (actions.place_wall.isDown && actions.place_wall.repeats == 0 && !placing) {
