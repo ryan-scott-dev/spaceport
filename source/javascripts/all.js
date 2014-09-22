@@ -29,6 +29,7 @@ window.gameRuntime = (function() {
       place_orbital: game.input.keyboard.addKey(Phaser.Keyboard.O),
       place_wall: game.input.keyboard.addKey(Phaser.Keyboard.W),
       place_door: game.input.keyboard.addKey(Phaser.Keyboard.D),
+      place_loader: game.input.keyboard.addKey(Phaser.Keyboard.L),
 
       cancel: game.input.keyboard.addKey(Phaser.Keyboard.ESC),
       place: game.input.keyboard.addKey(Phaser.Keyboard.ENTER),
@@ -71,6 +72,9 @@ window.gameRuntime = (function() {
       }
       case 'door': {
         return createDoorSilhouette(x, y, rotation, placed);
+      }
+      case 'loader': {
+        return createLoaderSilhouette(x, y, rotation, placed);
       }
       default: {
         console.error("Unable to create building of type '" + type + "'");
@@ -180,6 +184,37 @@ window.gameRuntime = (function() {
     return doorGroup;
   }
 
+  function createLoaderSilhouette(x, y, rotation, placed) {
+    var loaderGroup = game.add.group();
+    loaderGroup.x = x || 0;
+    loaderGroup.y = y || 0;
+    loaderGroup.rotation = rotation || 0;
+    loaderGroup.type = 'loader';
+    loaderGroup.pivot.x = (32 * 1) / 2;
+    loaderGroup.pivot.y = (32 * 1) / 2;
+
+    if (!placed) {
+      var doorTriggerZone1 = game.add.graphics(0, -32, loaderGroup);
+      doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
+      doorTriggerZone1.drawRect(0, 0, 32, 32);
+    }
+
+    var loader = game.add.graphics(0, 0, loaderGroup);
+    loader.lineStyle(2, 0x4D3D1F, 1);
+    loader.drawRect(0, 0, 32, 32);
+
+    loaderGroup.serialize = function() {
+      return {
+        type: this.type,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
+      };
+    };
+
+    return loaderGroup;
+  }
+
   function updateMarker() {
     marker.x = layer.getTileX(game.input.activePointer.worldX) * 32;
     marker.y = layer.getTileY(game.input.activePointer.worldY) * 32;
@@ -258,6 +293,10 @@ window.gameRuntime = (function() {
 
     if (actions.place_door.isDown && actions.place_door.repeats == 0) {
       startPlacingBuilding('door');
+    }
+
+    if (actions.place_loader.isDown && actions.place_loader.repeats == 0) {
+      startPlacingBuilding('loader');
     }
 
     if (actions.cancel.isDown && actions.cancel.repeats == 0) {
