@@ -49,6 +49,15 @@ window.gameRuntime = (function() {
     orbitalLoadZone.lineStyle(2, 0x00FF00, 1);
     orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);
 
+    orbitalGroup.serialize = function() {
+      return {
+        type: 'orbital'
+        x: orbitalGroup.x,
+        y: orbitalGroup.y,
+        rotation: orbitalGroup.rotation,
+      };
+    };
+
     return orbitalGroup;
   }
 
@@ -62,6 +71,15 @@ window.gameRuntime = (function() {
     wall.lineStyle(2, 0xFF1D3D, 1);
     wall.drawRect(0, 0, 32 * 1, 32 * 1);
 
+    wall.serialize = function() {
+      return {
+        type: 'wall'
+        x: wall.x,
+        y: wall.y,
+        rotation: wall.rotation,
+      };
+    };
+
     return wall;
   }
 
@@ -74,6 +92,15 @@ window.gameRuntime = (function() {
     door.pivot.y = (32 * 1) / 2;
     door.lineStyle(2, 0x1D3DFF, 1);
     door.drawRect(0, 0, 32 * 2, 32 * 1);
+
+    door.serialize = function() {
+      return {
+        type: 'door'
+        x: door.x,
+        y: door.y,
+        rotation: door.rotation,
+      };
+    };
 
     return door;
   }
