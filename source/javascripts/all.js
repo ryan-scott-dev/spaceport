@@ -22,6 +22,7 @@ window.gameRuntime = (function() {
 
     buildings = [];
     robots = [];
+    chance = new Chance();
 
     placing = null;
     cursors = game.input.keyboard.createCursorKeys();
@@ -61,28 +62,28 @@ window.gameRuntime = (function() {
     state.buildings = state.buildings || [];
     state.robots = state.robots || [];
 
-    state.buildings.forEach(function(building) {
-      addBuilding(building);
-    });
-
     state.robots.forEach(function(robot) {
       addRobot(robot);
     });
+
+    state.buildings.forEach(function(building) {
+      addBuilding(building);
+    });
   };
 
-  function createBuilding(type, placed, x, y, rotation) {
+  function createBuilding(id, type, placed, x, y, rotation, robotId) {
     switch (type) {
       case 'wall': {
-        return createWallSilhouette(x, y, rotation, placed);
+        return createWallSilhouette(id, x, y, rotation, placed);
       }
       case 'orbital': {
-        return createOrbitalSilhouette(x, y, rotation, placed);
+        return createOrbitalSilhouette(id, x, y, rotation, placed);
       }
       case 'door': {
-        return createDoorSilhouette(x, y, rotation, placed);
+        return createDoorSilhouette(id, x, y, rotation, placed);
       }
       case 'loader': {
-        return createLoaderSilhouette(x, y, rotation, placed);
+        return createLoaderSilhouette(id, x, y, rotation, placed, robotId);
       }
       default: {
         console.error("Unable to create building of type '" + type + "'");
@@ -92,17 +93,22 @@ window.gameRuntime = (function() {
   }
 
   function addBuilding(buildingTemplate) {
-    var newBuilding = createBuilding(buildingTemplate.type, true, buildingTemplate.x, buildingTemplate.y, buildingTemplate.rotation); 
+    var newBuilding = createBuilding(buildingTemplate.id, buildingTemplate.type, true, buildingTemplate.x, buildingTemplate.y, buildingTemplate.rotation, buildingTemplate.robotId); 
     this.buildings.push(newBuilding);
   };
 
   function addRobot(robotTemplate) {
-    var newRobot = createCargoRobot(robotTemplate.x, robotTemplate.y, robotTemplate.rotation); 
+    var newRobot = createCargoRobot(robotTemplate.id, robotTemplate.x, robotTemplate.y, robotTemplate.rotation); 
     this.robots.push(newRobot);
   };
 
-  function createOrbitalSilhouette(x, y, rotation, placed) {
+  function findRobot(id) {
+    return this.robots.find(function(robot) { return robot.id == id; } );
+  }
+
+  function createOrbitalSilhouette(id, x, y, rotation, placed) {
     var orbitalGroup = game.add.group();
+    orbitalGroup.id = id || chance.guid();
     orbitalGroup.x = x || 0;
     orbitalGroup.y = y || 0;
     orbitalGroup.rotation = rotation || 0;
@@ -126,6 +132,7 @@ window.gameRuntime = (function() {
     
     orbitalGroup.serialize = function() {
       return {
+        id: this.id,
         type: this.type,
         x: this.x,
         y: this.y,
@@ -136,8 +143,9 @@ window.gameRuntime = (function() {
     return orbitalGroup;
   }
 
-  function createWallSilhouette(x, y, rotation, placed) {
+  function createWallSilhouette(id, x, y, rotation, placed) {
     var wall = game.add.graphics();
+    wall.id = id || chance.guid();
     wall.x = x || 0;
     wall.y = y || 0;
     wall.rotation = rotation || 0;
@@ -151,6 +159,7 @@ window.gameRuntime = (function() {
 
     wall.serialize = function() {
       return {
+        id: this.id,
         type: this.type,
         x: this.x,
         y: this.y,
@@ -161,8 +170,9 @@ window.gameRuntime = (function() {
     return wall;
   }
 
-  function createDoorSilhouette(x, y, rotation, placed) {
+  function createDoorSilhouette(id, x, y, rotation, placed) {
     var doorGroup = game.add.group();
+    doorGroup.id = id || chance.guid();
     doorGroup.x = x || 0;
     doorGroup.y = y || 0;
     doorGroup.rotation = rotation || 0;
@@ -187,6 +197,7 @@ window.gameRuntime = (function() {
 
     doorGroup.serialize = function() {
       return {
+        id: this.id,
         type: this.type,
         x: this.x,
         y: this.y,
@@ -197,14 +208,16 @@ window.gameRuntime = (function() {
     return doorGroup;
   }
 
-  function createLoaderSilhouette(x, y, rotation, placed) {
+  function createLoaderSilhouette(id, x, y, rotation, placed, robotId) {
     var loaderGroup = game.add.group();
+    loaderGroup.id = id || chance.guid();
     loaderGroup.x = x || 0;
     loaderGroup.y = y || 0;
     loaderGroup.rotation = rotation || 0;
     loaderGroup.type = 'loader';
     loaderGroup.pivot.x = (32 * 1) / 2;
     loaderGroup.pivot.y = (32 * 1) / 2;
+    loaderGroup._spawnedRobot = findRobot(robotId);
 
     if (!placed) {
       var doorTriggerZone1 = game.add.graphics(0, -32, loaderGroup);
@@ -218,6 +231,8 @@ window.gameRuntime = (function() {
 
     loaderGroup.serialize = function() {
       return {
+        id: this.id,
+        robotId: this._spawnedRobot.id,
         type: this.type,
         x: this.x,
         y: this.y,
@@ -236,7 +251,7 @@ window.gameRuntime = (function() {
     };
 
     loaderGroup.spawnRobot = function() {
-      this._spawnedRobot = createCargoRobot(this.x, this.y, this.rotation);
+      this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
       robots.push(this._spawnedRobot);
       save();
     };
@@ -248,8 +263,9 @@ window.gameRuntime = (function() {
     return loaderGroup;
   }
 
-  function createCargoRobot(x, y, rotation) {
+  function createCargoRobot(id, x, y, rotation) {
     var robot = game.add.graphics();
+    robot.id = id || chance.guid();
     robot.x = x || 0;
     robot.y = y || 0;
     robot.rotation = rotation || 0;
@@ -262,6 +278,7 @@ window.gameRuntime = (function() {
 
     robot.serialize = function() {
       return {
+        id: this.id,
         type: this.type,
         x: this.x,
         y: this.y,
