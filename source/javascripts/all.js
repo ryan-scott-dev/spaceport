@@ -21,6 +21,8 @@ window.gameRuntime = (function() {
     marker.drawRect(0, 0, 32, 32);
 
     buildings = [];
+    robots = [];
+
     placing = null;
     cursors = game.input.keyboard.createCursorKeys();
 
@@ -50,15 +52,21 @@ window.gameRuntime = (function() {
 
   function gameState() {
     return {
-      buildings: this.buildings.map(function(building) { return building.serialize(); })
+      buildings: this.buildings.map(function(building) { return building.serialize(); }),
+      robots: this.robots.map(function(robot) { return robot.serialize(); })
     }
   }
 
   function fromGameState(state) {
     state.buildings = state.buildings || [];
+    state.robots = state.robots || [];
 
     state.buildings.forEach(function(building) {
       addBuilding(building);
+    });
+
+    state.robots.forEach(function(robot) {
+      createCargoRobot(robot);
     });
   };
 
@@ -212,8 +220,52 @@ window.gameRuntime = (function() {
       };
     };
 
+    loaderGroup.ensureRobotSpawned = function() {
+      if (this.requiresRobotSpawn()) {
+        this.spawnRobot();
+      }
+    };
+
+    loaderGroup.requiresRobotSpawn = function() {
+      return !this._spawnedRobot;
+    };
+
+    loaderGroup.spawnRobot = function() {
+      this._spawnedRobot = createCargoRobot(this.x, this.y, this.rotation);
+      robots.push(this._spawnedRobot);
+      save();
+    };
+
+    loaderGroup.update = function() {
+      this.ensureRobotSpawned();      
+    };
+
     return loaderGroup;
   }
+
+  function createCargoRobot(x, y, rotation) {
+    var robot = game.add.graphics();
+    robot.x = x || 0;
+    robot.y = y || 0;
+    robot.rotation = rotation || 0;
+    robot.type = 'cargo';
+    robot.pivot.x = (32 * 1) / 2;
+    robot.pivot.y = (32 * 1) / 2;
+
+    robot.lineStyle(1, 0x1BFFA2, 1);
+    robot.drawRect(3, 3, 26, 26);
+
+    robot.serialize = function() {
+      return {
+        type: this.type,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
+      };
+    };
+
+    return robot;
+  };
 
   function updateMarker() {
     marker.x = layer.getTileX(game.input.activePointer.worldX) * 32;
@@ -274,7 +326,17 @@ window.gameRuntime = (function() {
     }
   }
 
+  function updateBuildings() {
+    buildings.forEach(function(building) {
+      if (building.update) {
+        building.update();  
+      }
+    });
+  };
+
   function update() {
+    updateBuildings();
+
     if (actions.rotate.isDown && actions.rotate.repeats == 0) {
       rotateBuilding();
     }
