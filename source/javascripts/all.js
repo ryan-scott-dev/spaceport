@@ -264,6 +264,23 @@ window.gameRuntime = (function() {
       };
     };
 
+    robot.isIdle = function() {
+      return true;
+    };
+
+    robot.broadcastLookingForWork = function() {
+      if (this._hasBroadcastedLookingForWork) return;
+
+      this._hasBroadcastedLookingForWork = true;
+      console.log('Beep - Looking for work!');  
+    };
+
+    robot.update = function() {
+      if (this.isIdle()) {
+        this.broadcastLookingForWork();
+      }
+    };
+
     return robot;
   };
 
@@ -326,16 +343,7 @@ window.gameRuntime = (function() {
     }
   }
 
-  function updateBuildings() {
-    buildings.forEach(function(building) {
-      if (building.update) {
-        building.update();  
-      }
-    });
-  };
-
   function update() {
-    updateBuildings();
 
     if (actions.rotate.isDown && actions.rotate.repeats == 0) {
       rotateBuilding();
