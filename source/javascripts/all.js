@@ -66,7 +66,7 @@ window.gameRuntime = (function() {
     });
 
     state.robots.forEach(function(robot) {
-      createCargoRobot(robot);
+      addRobot(robot);
     });
   };
 
@@ -94,6 +94,11 @@ window.gameRuntime = (function() {
   function addBuilding(buildingTemplate) {
     var newBuilding = createBuilding(buildingTemplate.type, true, buildingTemplate.x, buildingTemplate.y, buildingTemplate.rotation); 
     this.buildings.push(newBuilding);
+  };
+
+  function addRobot(robotTemplate) {
+    var newRobot = createCargoRobot(robotTemplate.x, robotTemplate.y, robotTemplate.rotation); 
+    this.robots.push(newRobot);
   };
 
   function createOrbitalSilhouette(x, y, rotation, placed) {
