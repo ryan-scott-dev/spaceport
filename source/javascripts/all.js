@@ -116,6 +116,8 @@ window.gameRuntime = (function() {
     buildingGroup.type = params.type || 'unknown';
     buildingGroup.placed = params.placed || false;
     buildingGroup.pivot = params.pivot || lookupBuildingPivot(buildingGroup.type);
+    
+    buildingGroup._behaviours = [];
 
     buildingGroup.serialize = function() {
       var properties = {
@@ -126,15 +128,37 @@ window.gameRuntime = (function() {
         rotation: this.rotation,
       };
 
-      if (this.customProperties) {
-        var customProperties = this.customProperties();
+      var self = this;
+      this._behaviours.forEach(function(behaviour) {
+        var customProperties = behaviour.getProperties ? behaviour.getProperties.apply(self) : {};
         for(var property in customProperties) {
           properties[property] = customProperties[property];
         }
-      }
-
+      });
+      
       return properties;
     };
+
+    buildingGroup.addBehaviour = function(behaviour) {
+      this._behaviours.push(behaviour);
+
+      for (var property in behaviour) {
+        if (behaviour.hasOwnProperty(property)) {
+          this[property] = behaviour[property];
+        }
+      }
+    };
+
+    buildingGroup.update = function() {
+      var self = this;
+      this._behaviours.forEach(function(behaviour) {
+        behaviour.onUpdate.apply(self);
+      });
+    };
+
+    buildingGroup._behaviours.forEach(function(behaviour) {
+      behaviour.onCreate.apply(buildingGroup)
+    });
     
     return buildingGroup;  
   };
@@ -213,7 +237,6 @@ window.gameRuntime = (function() {
     loader.drawRect(0, 0, 32, 32);
   };
 
-
   function lookupBuildingPivot(type) {
     building_pivots = {
       orbital: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
@@ -230,31 +253,39 @@ window.gameRuntime = (function() {
     
     setupLoaderGraphics(loaderGroup);
 
-    loaderGroup.ensureRobotSpawned = function() {
-      if (this.requiresRobotSpawn()) {
-        this.spawnRobot();
-      }
+    var loaderBehaviour = {
+      onCreate: function(params) {
+        this._spawnedRobot = findRobot(params.robotId);
+      },
+
+      ensureRobotSpawned: function() {
+        if (this.requiresRobotSpawn()) {
+          this.spawnRobot();
+        }
+      },
+
+      requiresRobotSpawn: function() {
+        return !this._spawnedRobot && this.placed;
+      },
+
+      spawnRobot: function() {
+        this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
+        robots.push(this._spawnedRobot);
+        save();
+      },
+
+      getProperties: function() {
+        return {
+          robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
+        };
+      },
+
+      onUpdate: function() {
+        this.ensureRobotSpawned();      
+      },
     };
 
-    loaderGroup.requiresRobotSpawn = function() {
-      return !this._spawnedRobot && this.placed;
-    };
-
-    loaderGroup.spawnRobot = function() {
-      this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
-      robots.push(this._spawnedRobot);
-      save();
-    };
-
-    loaderGroup.customProperties = function() {
-      return {
-        robotId: this._spawnedRobot.id,
-      };
-    };
-
-    loaderGroup.update = function() {
-      this.ensureRobotSpawned();      
-    };
+    loaderGroup.addBehaviour(loaderBehaviour);
 
     return loaderGroup;
   }
@@ -318,6 +349,7 @@ window.gameRuntime = (function() {
     if (!placing) return;
 
     console.log('Placed Building');
+    placing.placed = true;
     addBuilding(placing);
     save();
     /* TODO - Register building created */
