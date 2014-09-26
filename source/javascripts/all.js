@@ -130,7 +130,7 @@ window.gameRuntime = (function() {
 
       var self = this;
       this._behaviours.forEach(function(behaviour) {
-        var customProperties = behaviour.getProperties ? behaviour.getProperties.apply(self) : {};
+        var customProperties = behaviour.getProperties ? behaviour.getProperties.call(self) : {};
         for(var property in customProperties) {
           properties[property] = customProperties[property];
         }
@@ -152,14 +152,21 @@ window.gameRuntime = (function() {
     buildingGroup.update = function() {
       var self = this;
       this._behaviours.forEach(function(behaviour) {
-        behaviour.onUpdate.apply(self);
+        behaviour.onUpdate.call(self);
       });
     };
 
-    buildingGroup._behaviours.forEach(function(behaviour) {
-      behaviour.onCreate.apply(buildingGroup)
-    });
-    
+    var behaviours = lookupBuildingBehaviours(params.type);
+    if (behaviours) {
+      behaviours.forEach(function(behaviour) {
+        loaderGroup.addBehaviour(behaviour);
+      });
+
+      behaviours.forEach(function(behaviour) {
+        behaviour.onCreate.call(loaderGroup, params);
+      });
+    }
+
     return buildingGroup;  
   };
 
@@ -238,7 +245,7 @@ window.gameRuntime = (function() {
   };
 
   function lookupBuildingPivot(type) {
-    building_pivots = {
+    var building_pivots = {
       orbital: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
       wall:    new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
       door:    new Phaser.Point((32 * 3) / 2, (32 * 1) / 2),
@@ -247,45 +254,48 @@ window.gameRuntime = (function() {
     return building_pivots[type];
   };
 
+  var loaderBehaviour = {
+    onCreate: function(params) {
+      this._spawnedRobot = findRobot(params.robotId);
+    },
+
+    ensureRobotSpawned: function() {
+      if (this.requiresRobotSpawn()) {
+        this.spawnRobot();
+      }
+    },
+
+    requiresRobotSpawn: function() {
+      return !this._spawnedRobot && this.placed;
+    },
+
+    spawnRobot: function() {
+      this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
+      robots.push(this._spawnedRobot);
+      save();
+    },
+
+    getProperties: function() {
+      return {
+        robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
+      };
+    },
+
+    onUpdate: function() {
+      this.ensureRobotSpawned();      
+    },
+  };
+
+  function lookupBuildingBehaviours(type) {
+    var building_behaviours = {
+      loader: [loaderBehaviour],
+    };
+    return building_behaviours[type];
+  };
+
   function createLoaderSilhouette(params) {
     var loaderGroup = createABuilding(params);
-    loaderGroup._spawnedRobot = findRobot(params.robotId);
-    
     setupLoaderGraphics(loaderGroup);
-
-    var loaderBehaviour = {
-      onCreate: function(params) {
-        this._spawnedRobot = findRobot(params.robotId);
-      },
-
-      ensureRobotSpawned: function() {
-        if (this.requiresRobotSpawn()) {
-          this.spawnRobot();
-        }
-      },
-
-      requiresRobotSpawn: function() {
-        return !this._spawnedRobot && this.placed;
-      },
-
-      spawnRobot: function() {
-        this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
-        robots.push(this._spawnedRobot);
-        save();
-      },
-
-      getProperties: function() {
-        return {
-          robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
-        };
-      },
-
-      onUpdate: function() {
-        this.ensureRobotSpawned();      
-      },
-    };
-
-    loaderGroup.addBehaviour(loaderBehaviour);
 
     return loaderGroup;
   }
