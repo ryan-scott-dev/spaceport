@@ -106,16 +106,32 @@ window.gameRuntime = (function() {
     return this.robots.find(function(robot) { return robot.id == id; } );
   }
 
+  function createABuilding(params) {
+    var buildingGroup = game.add.group();
+    buildingGroup.id = params.id || chance.guid();
+    buildingGroup.x = params.x || 0;
+    buildingGroup.y = params.y || 0;
+    buildingGroup.rotation = params.rotation || 0;
+    buildingGroup.type = params.type || 'unknown';
+
+    buildingGroup.serialize = function() {
+      return {
+        id: this.id,
+        type: this.type,
+        x: this.x,
+        y: this.y,
+        rotation: this.rotation,
+      };
+    };
+    
+    return buildingGroup;  
+  };
+
   function createOrbitalSilhouette(id, x, y, rotation, placed) {
-    var orbitalGroup = game.add.group();
-    orbitalGroup.id = id || chance.guid();
-    orbitalGroup.x = x || 0;
-    orbitalGroup.y = y || 0;
-    orbitalGroup.rotation = rotation || 0;
+    var orbitalGroup = createABuilding({ type: 'orbital', id: id, x: x, y: y, rotation: rotation });
     orbitalGroup.pivot.x = (32 * 3) / 2;
     orbitalGroup.pivot.y = (32 * 5) / 2;
-    orbitalGroup.type = 'orbital';
-
+    
     var orbital = game.add.graphics(0, 0, orbitalGroup);
     orbital.lineStyle(2, 0xFF00FF, 1);
     orbital.drawRect(0, 0, 32 * 3, 32 * 4);
@@ -129,54 +145,27 @@ window.gameRuntime = (function() {
       orbitalLoadZone.lineStyle(1, 0x00FF00, 0.5);
       orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);  
     }
-    
-    orbitalGroup.serialize = function() {
-      return {
-        id: this.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-    };
 
     return orbitalGroup;
   }
 
   function createWallSilhouette(id, x, y, rotation, placed) {
-    var wall = game.add.graphics();
-    wall.id = id || chance.guid();
-    wall.x = x || 0;
-    wall.y = y || 0;
-    wall.rotation = rotation || 0;
-    wall.type = 'wall';
-    wall.pivot.x = (32 * 1) / 2;
-    wall.pivot.y = 16;
+    var wallGroup = createABuilding({ type: 'wall', id: id, x: x, y: y, rotation: rotation });
+    
+    wallGroup.pivot.x = (32 * 1) / 2;
+    wallGroup.pivot.y = 16;
+    
+    var wall = game.add.graphics(0, 0, wallGroup);
     
     wall.lineStyle(2, 0xFF1D3D, 1);
     wall.moveTo(0, 0);
     wall.lineTo(32 * 1, 0);
 
-    wall.serialize = function() {
-      return {
-        id: this.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-    };
-
-    return wall;
+    return wallGroup;
   }
 
   function createDoorSilhouette(id, x, y, rotation, placed) {
-    var doorGroup = game.add.group();
-    doorGroup.id = id || chance.guid();
-    doorGroup.x = x || 0;
-    doorGroup.y = y || 0;
-    doorGroup.rotation = rotation || 0;
-    doorGroup.type = 'door';
+    var doorGroup = createABuilding({ type: 'door', id: id, x: x, y: y, rotation: rotation });
     doorGroup.pivot.x = (32 * 3) / 2;
     doorGroup.pivot.y = 16;
 
@@ -195,26 +184,11 @@ window.gameRuntime = (function() {
     door.moveTo(0, 0);
     door.lineTo(32 * 3, 0);
 
-    doorGroup.serialize = function() {
-      return {
-        id: this.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-    };
-
     return doorGroup;
   }
 
   function createLoaderSilhouette(id, x, y, rotation, placed, robotId) {
-    var loaderGroup = game.add.group();
-    loaderGroup.id = id || chance.guid();
-    loaderGroup.x = x || 0;
-    loaderGroup.y = y || 0;
-    loaderGroup.rotation = rotation || 0;
-    loaderGroup.type = 'loader';
+    var loaderGroup = createABuilding({ type: 'loader', id: id, x: x, y: y, rotation: rotation });
     loaderGroup.pivot.x = (32 * 1) / 2;
     loaderGroup.pivot.y = (32 * 1) / 2;
     loaderGroup._spawnedRobot = findRobot(robotId);
@@ -228,17 +202,6 @@ window.gameRuntime = (function() {
     var loader = game.add.graphics(0, 0, loaderGroup);
     loader.lineStyle(2, 0x4D3D1F, 1);
     loader.drawRect(0, 0, 32, 32);
-
-    loaderGroup.serialize = function() {
-      return {
-        id: this.id,
-        robotId: this._spawnedRobot.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-    };
 
     loaderGroup.ensureRobotSpawned = function() {
       if (this.requiresRobotSpawn()) {
@@ -334,7 +297,7 @@ window.gameRuntime = (function() {
   function startPlacingBuilding(type) {
     if (placing) return;
 
-    placing = createBuilding(type);
+    placing = createBuilding(null, type);
   }
 
   function stopPlacingBuilding() {
