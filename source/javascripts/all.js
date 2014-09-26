@@ -115,6 +115,7 @@ window.gameRuntime = (function() {
     buildingGroup.rotation = params.rotation || 0;
     buildingGroup.type = params.type || 'unknown';
     buildingGroup.placed = params.placed || false;
+    buildingGroup.pivot = params.pivot || lookupBuildingPivot(buildingGroup.type);
 
     buildingGroup.serialize = function() {
       var properties = {
@@ -156,8 +157,6 @@ window.gameRuntime = (function() {
 
   function createOrbitalSilhouette(params) {
     var orbitalGroup = createABuilding(params);
-    orbitalGroup.pivot.x = (32 * 3) / 2;
-    orbitalGroup.pivot.y = (32 * 5) / 2;
     setupOrbitalGraphics(orbitalGroup);
 
     return orbitalGroup;
@@ -173,8 +172,6 @@ window.gameRuntime = (function() {
 
   function createWallSilhouette(params) {
     var wallGroup = createABuilding(params);
-    wallGroup.pivot.x = (32 * 1) / 2;
-    wallGroup.pivot.y = 16;
     setupWallGraphics(wallGroup);
 
     return wallGroup;
@@ -199,8 +196,6 @@ window.gameRuntime = (function() {
 
   function createDoorSilhouette(params) {
     var doorGroup = createABuilding(params);
-    doorGroup.pivot.x = (32 * 3) / 2;
-    doorGroup.pivot.y = 16;
     setupDoorGraphics(doorGroup);
 
     return doorGroup;
@@ -218,10 +213,19 @@ window.gameRuntime = (function() {
     loader.drawRect(0, 0, 32, 32);
   };
 
+
+  function lookupBuildingPivot(type) {
+    building_pivots = {
+      orbital: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
+      wall:    new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
+      door:    new Phaser.Point((32 * 3) / 2, (32 * 1) / 2),
+      loader:  new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
+    };
+    return building_pivots[type];
+  };
+
   function createLoaderSilhouette(params) {
     var loaderGroup = createABuilding(params);
-    loaderGroup.pivot.x = (32 * 1) / 2;
-    loaderGroup.pivot.y = (32 * 1) / 2;
     loaderGroup._spawnedRobot = findRobot(params.robotId);
     
     setupLoaderGraphics(loaderGroup);
@@ -233,7 +237,7 @@ window.gameRuntime = (function() {
     };
 
     loaderGroup.requiresRobotSpawn = function() {
-      return !this._spawnedRobot;
+      return !this._spawnedRobot && this.placed;
     };
 
     loaderGroup.spawnRobot = function() {
@@ -326,7 +330,7 @@ window.gameRuntime = (function() {
   function startPlacingBuilding(type) {
     if (placing) return;
 
-    placing = createBuilding(null, type);
+    placing = createBuilding({ type: type });
   }
 
   function stopPlacingBuilding() {
