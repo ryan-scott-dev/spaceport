@@ -67,33 +67,34 @@ window.gameRuntime = (function() {
     });
 
     state.buildings.forEach(function(building) {
+      building.placed = true;
       addBuilding(building);
     });
   };
 
-  function createBuilding(id, type, placed, x, y, rotation, robotId) {
-    switch (type) {
+  function createBuilding(template) {
+    switch (template.type) {
       case 'wall': {
-        return createWallSilhouette(id, x, y, rotation, placed);
+        return createWallSilhouette(template);
       }
       case 'orbital': {
-        return createOrbitalSilhouette(id, x, y, rotation, placed);
+        return createOrbitalSilhouette(template);
       }
       case 'door': {
-        return createDoorSilhouette(id, x, y, rotation, placed);
+        return createDoorSilhouette(template);
       }
       case 'loader': {
-        return createLoaderSilhouette(id, x, y, rotation, placed, robotId);
+        return createLoaderSilhouette(template);
       }
       default: {
-        console.error("Unable to create building of type '" + type + "'");
+        console.error("Unable to create building of type '" + template.type + "'");
       }
     }
     return null;
   }
 
   function addBuilding(buildingTemplate) {
-    var newBuilding = createBuilding(buildingTemplate.id, buildingTemplate.type, true, buildingTemplate.x, buildingTemplate.y, buildingTemplate.rotation, buildingTemplate.robotId); 
+    var newBuilding = createBuilding(buildingTemplate); 
     this.buildings.push(newBuilding);
   };
 
@@ -113,95 +114,117 @@ window.gameRuntime = (function() {
     buildingGroup.y = params.y || 0;
     buildingGroup.rotation = params.rotation || 0;
     buildingGroup.type = params.type || 'unknown';
+    buildingGroup.placed = params.placed || false;
 
     buildingGroup.serialize = function() {
-      return {
+      var properties = {
         id: this.id,
         type: this.type,
         x: this.x,
         y: this.y,
         rotation: this.rotation,
       };
+
+      if (this.customProperties) {
+        var customProperties = this.customProperties();
+        for(var property in customProperties) {
+          properties[property] = customProperties[property];
+        }
+      }
+
+      return properties;
     };
     
     return buildingGroup;  
   };
 
-  function createOrbitalSilhouette(id, x, y, rotation, placed) {
-    var orbitalGroup = createABuilding({ type: 'orbital', id: id, x: x, y: y, rotation: rotation });
-    orbitalGroup.pivot.x = (32 * 3) / 2;
-    orbitalGroup.pivot.y = (32 * 5) / 2;
-    
-    var orbital = game.add.graphics(0, 0, orbitalGroup);
+  function setupOrbitalGraphics(building) {
+    var orbital = game.add.graphics(0, 0, building);
     orbital.lineStyle(2, 0xFF00FF, 1);
     orbital.drawRect(0, 0, 32 * 3, 32 * 4);
     
-    if (placed) {
+    if (building.placed) {
       orbital.beginFill(0xFF00FF, 0.5);
       orbital.drawRect(0, 0, 32 * 3, 32 * 4);
       orbital.endFill();
     } else {
-      var orbitalLoadZone = game.add.graphics(0, 128, orbitalGroup);
+      var orbitalLoadZone = game.add.graphics(0, 128, building);
       orbitalLoadZone.lineStyle(1, 0x00FF00, 0.5);
       orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);  
     }
+  };
+
+  function createOrbitalSilhouette(params) {
+    var orbitalGroup = createABuilding(params);
+    orbitalGroup.pivot.x = (32 * 3) / 2;
+    orbitalGroup.pivot.y = (32 * 5) / 2;
+    setupOrbitalGraphics(orbitalGroup);
 
     return orbitalGroup;
   }
 
-  function createWallSilhouette(id, x, y, rotation, placed) {
-    var wallGroup = createABuilding({ type: 'wall', id: id, x: x, y: y, rotation: rotation });
-    
-    wallGroup.pivot.x = (32 * 1) / 2;
-    wallGroup.pivot.y = 16;
-    
-    var wall = game.add.graphics(0, 0, wallGroup);
+  function setupWallGraphics(building) {
+    var wall = game.add.graphics(0, 0, building);
     
     wall.lineStyle(2, 0xFF1D3D, 1);
     wall.moveTo(0, 0);
     wall.lineTo(32 * 1, 0);
+  };
+
+  function createWallSilhouette(params) {
+    var wallGroup = createABuilding(params);
+    wallGroup.pivot.x = (32 * 1) / 2;
+    wallGroup.pivot.y = 16;
+    setupWallGraphics(wallGroup);
 
     return wallGroup;
   }
 
-  function createDoorSilhouette(id, x, y, rotation, placed) {
-    var doorGroup = createABuilding({ type: 'door', id: id, x: x, y: y, rotation: rotation });
-    doorGroup.pivot.x = (32 * 3) / 2;
-    doorGroup.pivot.y = 16;
-
-    if (!placed) {
-      var doorTriggerZone1 = game.add.graphics(0, -32, doorGroup);
+  function setupDoorGraphics(building) {
+    if (!building.placed) {
+      var doorTriggerZone1 = game.add.graphics(0, -32, building);
       doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
       doorTriggerZone1.drawRect(0, 0, 32 * 3, 32);
 
-      var doorTriggerZone2 = game.add.graphics(0, 0, doorGroup);
+      var doorTriggerZone2 = game.add.graphics(0, 0, building);
       doorTriggerZone2.lineStyle(1, 0x00FF00, 0.5);
       doorTriggerZone2.drawRect(0, 0, 32 * 3, 32);
     }
 
-    var door = game.add.graphics(0, 0, doorGroup);
+    var door = game.add.graphics(0, 0, building);
     door.lineStyle(2, 0x1D3DFF, 1);
     door.moveTo(0, 0);
     door.lineTo(32 * 3, 0);
+  };
+
+  function createDoorSilhouette(params) {
+    var doorGroup = createABuilding(params);
+    doorGroup.pivot.x = (32 * 3) / 2;
+    doorGroup.pivot.y = 16;
+    setupDoorGraphics(doorGroup);
 
     return doorGroup;
   }
 
-  function createLoaderSilhouette(id, x, y, rotation, placed, robotId) {
-    var loaderGroup = createABuilding({ type: 'loader', id: id, x: x, y: y, rotation: rotation });
-    loaderGroup.pivot.x = (32 * 1) / 2;
-    loaderGroup.pivot.y = (32 * 1) / 2;
-    loaderGroup._spawnedRobot = findRobot(robotId);
-
-    if (!placed) {
-      var doorTriggerZone1 = game.add.graphics(0, -32, loaderGroup);
+  function setupLoaderGraphics(building) {
+    if (!building.placed) {
+      var doorTriggerZone1 = game.add.graphics(0, -32, building);
       doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
       doorTriggerZone1.drawRect(0, 0, 32, 32);
     }
 
-    var loader = game.add.graphics(0, 0, loaderGroup);
+    var loader = game.add.graphics(0, 0, building);
     loader.lineStyle(2, 0x4D3D1F, 1);
     loader.drawRect(0, 0, 32, 32);
+  };
+
+  function createLoaderSilhouette(params) {
+    var loaderGroup = createABuilding(params);
+    loaderGroup.pivot.x = (32 * 1) / 2;
+    loaderGroup.pivot.y = (32 * 1) / 2;
+    loaderGroup._spawnedRobot = findRobot(params.robotId);
+    
+    setupLoaderGraphics(loaderGroup);
 
     loaderGroup.ensureRobotSpawned = function() {
       if (this.requiresRobotSpawn()) {
@@ -217,6 +240,12 @@ window.gameRuntime = (function() {
       this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
       robots.push(this._spawnedRobot);
       save();
+    };
+
+    loaderGroup.customProperties = function() {
+      return {
+        robotId: this._spawnedRobot.id,
+      };
     };
 
     loaderGroup.update = function() {
