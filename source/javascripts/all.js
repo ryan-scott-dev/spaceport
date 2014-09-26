@@ -116,7 +116,8 @@ window.gameRuntime = (function() {
     buildingGroup.type = params.type || 'unknown';
     buildingGroup.placed = params.placed || false;
     buildingGroup.pivot = params.pivot || lookupBuildingPivot(buildingGroup.type);
-    
+
+    buildingGroup.graphics = {};
     buildingGroup._behaviours = [];
 
     buildingGroup.serialize = function() {
@@ -159,11 +160,11 @@ window.gameRuntime = (function() {
     var behaviours = lookupBuildingBehaviours(params.type);
     if (behaviours) {
       behaviours.forEach(function(behaviour) {
-        loaderGroup.addBehaviour(behaviour);
+        buildingGroup.addBehaviour(behaviour);
       });
 
       behaviours.forEach(function(behaviour) {
-        behaviour.onCreate.call(loaderGroup, params);
+        behaviour.onCreate.call(buildingGroup, params);
       });
     }
 
@@ -188,6 +189,8 @@ window.gameRuntime = (function() {
 
   function createOrbitalSilhouette(params) {
     var orbitalGroup = createABuilding(params);
+    // var graphicsSetup = 'setup' + chance.capitalize(params.type) + 'Graphics';
+    // this[graphicsSetup](orbitalGroup);
     setupOrbitalGraphics(orbitalGroup);
 
     return orbitalGroup;
@@ -233,15 +236,6 @@ window.gameRuntime = (function() {
   }
 
   function setupLoaderGraphics(building) {
-    if (!building.placed) {
-      var doorTriggerZone1 = game.add.graphics(0, -32, building);
-      doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
-      doorTriggerZone1.drawRect(0, 0, 32, 32);
-    }
-
-    var loader = game.add.graphics(0, 0, building);
-    loader.lineStyle(2, 0x4D3D1F, 1);
-    loader.drawRect(0, 0, 32, 32);
   };
 
   function lookupBuildingPivot(type) {
@@ -286,16 +280,32 @@ window.gameRuntime = (function() {
     },
   };
 
+  var loaderVisual = {
+    onCreate: function() {
+      this.graphics.triggerZone = game.add.graphics(0, -32, this);
+      this.graphics.triggerZone.lineStyle(1, 0x00FF00, 0.5);
+      this.graphics.triggerZone.drawRect(0, 0, 32, 32);
+    
+      this.graphics.base = game.add.graphics(0, 0, this);
+      this.graphics.base.lineStyle(2, 0x4D3D1F, 1);
+      this.graphics.base.drawRect(0, 0, 32, 32);
+    },
+
+    onUpdate: function() {
+      this.graphics.triggerZone.visible = !this.placed;
+    }
+  }
+
   function lookupBuildingBehaviours(type) {
     var building_behaviours = {
-      loader: [loaderBehaviour],
+      loader: [loaderBehaviour, loaderVisual],
     };
     return building_behaviours[type];
   };
 
   function createLoaderSilhouette(params) {
     var loaderGroup = createABuilding(params);
-    setupLoaderGraphics(loaderGroup);
+    // setupLoaderGraphics(loaderGroup);
 
     return loaderGroup;
   }
