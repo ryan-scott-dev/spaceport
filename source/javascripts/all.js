@@ -72,27 +72,6 @@ window.gameRuntime = (function() {
     });
   };
 
-  function createBuilding(template) {
-    switch (template.type) {
-      case 'wall': {
-        return createWallSilhouette(template);
-      }
-      case 'orbital': {
-        return createOrbitalSilhouette(template);
-      }
-      case 'door': {
-        return createDoorSilhouette(template);
-      }
-      case 'loader': {
-        return createLoaderSilhouette(template);
-      }
-      default: {
-        console.error("Unable to create building of type '" + template.type + "'");
-      }
-    }
-    return null;
-  }
-
   function addBuilding(buildingTemplate) {
     var newBuilding = createBuilding(buildingTemplate); 
     this.buildings.push(newBuilding);
@@ -107,7 +86,7 @@ window.gameRuntime = (function() {
     return this.robots.find(function(robot) { return robot.id == id; } );
   }
 
-  function createABuilding(params) {
+  function createBuilding(params) {
     var buildingGroup = game.add.group();
     buildingGroup.id = params.id || chance.guid();
     buildingGroup.x = params.x || 0;
@@ -171,72 +150,61 @@ window.gameRuntime = (function() {
     return buildingGroup;  
   };
 
-  function setupOrbitalGraphics(building) {
-    var orbital = game.add.graphics(0, 0, building);
-    orbital.lineStyle(2, 0xFF00FF, 1);
-    orbital.drawRect(0, 0, 32 * 3, 32 * 4);
-    
-    if (building.placed) {
-      orbital.beginFill(0xFF00FF, 0.5);
-      orbital.drawRect(0, 0, 32 * 3, 32 * 4);
-      orbital.endFill();
-    } else {
-      var orbitalLoadZone = game.add.graphics(0, 128, building);
-      orbitalLoadZone.lineStyle(1, 0x00FF00, 0.5);
-      orbitalLoadZone.drawRect(0, 0, 32 * 3, 32);  
+  var orbitalVisual = {
+    onCreate: function() {
+      this.graphics.orbital = game.add.graphics(0, 0, this);
+      this.graphics.orbital.lineStyle(2, 0xFF00FF, 1);
+      this.graphics.orbital.drawRect(0, 0, 32 * 3, 32 * 4);
+      
+      this.graphics.orbital.beginFill(0xFF00FF, 0.5);
+      this.graphics.orbital.drawRect(0, 0, 32 * 3, 32 * 4);
+      this.graphics.orbital.endFill();
+
+      this.graphics.triggerZone = game.add.graphics(0, 128, this);
+      this.graphics.triggerZone.lineStyle(1, 0x00FF00, 0.5);
+      this.graphics.triggerZone.drawRect(0, 0, 32 * 3, 32);  
+    },
+
+    onUpdate: function() {
+      this.graphics.triggerZone.visible = !this.placed;
     }
-  };
-
-  function createOrbitalSilhouette(params) {
-    var orbitalGroup = createABuilding(params);
-    // var graphicsSetup = 'setup' + chance.capitalize(params.type) + 'Graphics';
-    // this[graphicsSetup](orbitalGroup);
-    setupOrbitalGraphics(orbitalGroup);
-
-    return orbitalGroup;
   }
 
-  function setupWallGraphics(building) {
-    var wall = game.add.graphics(0, 0, building);
-    
-    wall.lineStyle(2, 0xFF1D3D, 1);
-    wall.moveTo(0, 0);
-    wall.lineTo(32 * 1, 0);
-  };
+  var wallVisual = {
+    onCreate: function() {
+      this.graphics.wall = game.add.graphics(0, 0, this);
+      
+      this.graphics.wall.lineStyle(2, 0xFF1D3D, 1);
+      this.graphics.wall.moveTo(0, 0);
+      this.graphics.wall.lineTo(32 * 1, 0);
+    },
 
-  function createWallSilhouette(params) {
-    var wallGroup = createABuilding(params);
-    setupWallGraphics(wallGroup);
-
-    return wallGroup;
-  }
-
-  function setupDoorGraphics(building) {
-    if (!building.placed) {
-      var doorTriggerZone1 = game.add.graphics(0, -32, building);
-      doorTriggerZone1.lineStyle(1, 0x00FF00, 0.5);
-      doorTriggerZone1.drawRect(0, 0, 32 * 3, 32);
-
-      var doorTriggerZone2 = game.add.graphics(0, 0, building);
-      doorTriggerZone2.lineStyle(1, 0x00FF00, 0.5);
-      doorTriggerZone2.drawRect(0, 0, 32 * 3, 32);
+    onUpdate: function() {
     }
-
-    var door = game.add.graphics(0, 0, building);
-    door.lineStyle(2, 0x1D3DFF, 1);
-    door.moveTo(0, 0);
-    door.lineTo(32 * 3, 0);
-  };
-
-  function createDoorSilhouette(params) {
-    var doorGroup = createABuilding(params);
-    setupDoorGraphics(doorGroup);
-
-    return doorGroup;
   }
 
-  function setupLoaderGraphics(building) {
-  };
+  var doorVisual = {
+    onCreate: function() {
+      this.graphics.triggerZone1 = game.add.graphics(0, -32, this);
+      this.graphics.triggerZone1.lineStyle(1, 0x00FF00, 0.5);
+      this.graphics.triggerZone1.drawRect(0, 0, 32 * 3, 32);
+
+      this.graphics.triggerZone2 = game.add.graphics(0, 0, this);
+      this.graphics.triggerZone2.lineStyle(1, 0x00FF00, 0.5);
+      this.graphics.triggerZone2.drawRect(0, 0, 32 * 3, 32);
+    
+      this.graphics.base = game.add.graphics(0, 0, this);
+      this.graphics.base.lineStyle(2, 0x1D3DFF, 1);
+      this.graphics.base.moveTo(0, 0);
+      this.graphics.base.lineTo(32 * 3, 0);
+    },
+
+    onUpdate: function() {
+      this.graphics.triggerZone1.visible = 
+      this.graphics.triggerZone2.visible = 
+        !this.placed;
+    }
+  }
 
   function lookupBuildingPivot(type) {
     var building_pivots = {
@@ -298,17 +266,13 @@ window.gameRuntime = (function() {
 
   function lookupBuildingBehaviours(type) {
     var building_behaviours = {
-      loader: [loaderBehaviour, loaderVisual],
+      loader:   [loaderBehaviour, loaderVisual],
+      door:     [doorVisual],
+      orbital:  [orbitalVisual],
+      wall:     [wallVisual],
     };
     return building_behaviours[type];
   };
-
-  function createLoaderSilhouette(params) {
-    var loaderGroup = createABuilding(params);
-    // setupLoaderGraphics(loaderGroup);
-
-    return loaderGroup;
-  }
 
   function createCargoRobot(id, x, y, rotation) {
     var robot = game.add.graphics();
