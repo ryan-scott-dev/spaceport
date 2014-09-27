@@ -131,7 +131,10 @@ window.gameRuntime = (function() {
 
     buildingGroup.update = function() {
       var self = this;
-      this._behaviours.forEach(function(behaviour) {
+      this._behaviours.filter(function(behaviour) {
+        return !!behaviour.onUpdate;
+      })
+      .forEach(function(behaviour) {
         behaviour.onUpdate.call(self);
       });
     };
@@ -142,7 +145,10 @@ window.gameRuntime = (function() {
         buildingGroup.addBehaviour(behaviour);
       });
 
-      behaviours.forEach(function(behaviour) {
+      behaviours.filter(function(behaviour) {
+        return !!behaviour.onCreate;
+      })
+      .forEach(function(behaviour) {
         behaviour.onCreate.call(buildingGroup, params);
       });
     }
@@ -177,9 +183,6 @@ window.gameRuntime = (function() {
       this.graphics.wall.lineStyle(2, 0xFF1D3D, 1);
       this.graphics.wall.moveTo(0, 0);
       this.graphics.wall.lineTo(32 * 1, 0);
-    },
-
-    onUpdate: function() {
     }
   }
 
