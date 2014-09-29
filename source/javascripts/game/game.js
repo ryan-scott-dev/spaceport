@@ -80,6 +80,11 @@ sp.game.runtime = (function() {
     this.robots.push(newRobot);
   };
 
+  function addNewRobot(robot) {
+    robots.push(this._spawnedRobot);
+    save();
+  }
+
   function findRobot(id) {
     return this.robots.find(function(robot) { return robot.id == id; } );
   }
@@ -181,8 +186,7 @@ sp.game.runtime = (function() {
 
     spawnRobot: function() {
       this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
-      robots.push(this._spawnedRobot);
-      save();
+      addNewRobot(this._spawnedRobot);
     },
 
     getProperties: function() {
