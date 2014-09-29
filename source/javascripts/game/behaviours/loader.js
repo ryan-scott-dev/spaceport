@@ -1,33 +1,32 @@
-// sp.behaviours.loader = {
+sp.behaviours.loader = {
 
-//   onCreate: function(params) {
-//     this._spawnedRobot = sp.game.map.findRobot(params.robotId);
-//   },
+  create: function(params) {
+    this._spawnedRobot = this.world.findRobot(params.robotId);
+  },
 
-//   ensureRobotSpawned: function() {
-//     if (this.requiresRobotSpawn()) {
-//       this.spawnRobot();
-//     }
-//   },
+  ensureRobotSpawned: function() {
+    if (this.requiresRobotSpawn()) {
+      this.spawnRobot();
+    }
+  },
 
-//   requiresRobotSpawn: function() {
-//     return !this._spawnedRobot && this.placed;
-//   },
+  requiresRobotSpawn: function() {
+    return !this._spawnedRobot && this.placed;
+  },
 
-//   spawnRobot: function() {
-//     this._spawnedRobot = sp.game.map.createCargoRobot(null, this.x, this.y, this.rotation);
-//     sp.game.map.robots.push(this._spawnedRobot);
-//     sp.game.save();
-//   },
+  spawnRobot: function() {
+    this._spawnedRobot = this.world.createCargoRobot(null, this.x, this.y, this.rotation);
+    this.world.addNewRobot(this._spawnedRobot);
+  },
 
-//   getProperties: function() {
-//     return {
-//       robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
-//     };
-//   },
+  getProperties: function() {
+    return {
+      robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
+    };
+  },
 
-//   onUpdate: function() {
-//     this.ensureRobotSpawned();      
-//   },
+  update: function() {
+    this.ensureRobotSpawned();      
+  },
 
-// };
+};

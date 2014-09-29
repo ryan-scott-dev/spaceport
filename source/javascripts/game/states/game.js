@@ -95,7 +95,7 @@ Spaceport.Game.prototype = {
 
   addNewRobot: function(robot) {
     this.robots.push(robot);
-    this.save();
+    this.saveState();
   },
 
   findRobot: function(id) {
@@ -112,6 +112,7 @@ Spaceport.Game.prototype = {
     buildingGroup.placed = params.placed || false;
     buildingGroup.pivot = params.pivot || this.lookupBuildingPivot(buildingGroup.type);
 
+    buildingGroup.world = this;
     buildingGroup.graphics = {};
     buildingGroup._behaviours = [];
 
@@ -150,8 +151,8 @@ Spaceport.Game.prototype = {
         return !!behaviour.update;
       })
       .forEach(function(behaviour) {
-        behaviour.update.call(buildingGroup, this);
-      }.bind(this));
+        behaviour.update.call(buildingGroup);
+      });
     };
 
     var behaviours = this.lookupBuildingBehaviours(params.type);
@@ -164,7 +165,7 @@ Spaceport.Game.prototype = {
         return !!behaviour.create;
       })
       .forEach(function(behaviour) {
-        behaviour.create.call(buildingGroup, this, params);
+        behaviour.create.call(buildingGroup, params);
       }.bind(this));
     }
 
@@ -181,40 +182,9 @@ Spaceport.Game.prototype = {
     return building_pivots[type];
   },
 
-  // var loaderBehaviour = {
-  //   onCreate: function(params) {
-  //     this._spawnedRobot = findRobot(params.robotId);
-  //   },
-
-  //   ensureRobotSpawned: function() {
-  //     if (this.requiresRobotSpawn()) {
-  //       this.spawnRobot();
-  //     }
-  //   },
-
-  //   requiresRobotSpawn: function() {
-  //     return !this._spawnedRobot && this.placed;
-  //   },
-
-  //   spawnRobot: function() {
-  //     this._spawnedRobot = createCargoRobot(null, this.x, this.y, this.rotation);
-  //     addNewRobot(this._spawnedRobot);
-  //   },
-
-  //   getProperties: function() {
-  //     return {
-  //       robotId: this._spawnedRobot ? this._spawnedRobot.id : null,
-  //     };
-  //   },
-
-  //   onUpdate: function() {
-  //     this.ensureRobotSpawned();      
-  //   },
-  // };
-
   lookupBuildingBehaviours: function(type) {
     var building_behaviours = {
-      loader:   [sp.behaviours.visual.loader],
+      loader:   [sp.behaviours.visual.loader, sp.behaviours.loader],
       door:     [sp.behaviours.visual.door],
       orbital:  [sp.behaviours.visual.orbital],
       wall:     [sp.behaviours.visual.wall],
