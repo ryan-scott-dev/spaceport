@@ -58,7 +58,7 @@ Spaceport.Game.prototype = {
   },
 
   saveState: function() {
-    var state = gameState();
+    var state = this.gameState();
     localStorage.setItem('game.state', JSON.stringify(state));
   },
 
@@ -147,10 +147,10 @@ Spaceport.Game.prototype = {
 
     buildingGroup.update = function() {
       this._behaviours.filter(function(behaviour) {
-        return !!behaviour.onUpdate;
+        return !!behaviour.update;
       })
       .forEach(function(behaviour) {
-        behaviour.onUpdate.call(buildingGroup, this);
+        behaviour.update.call(buildingGroup, this);
       }.bind(this));
     };
 
@@ -161,10 +161,10 @@ Spaceport.Game.prototype = {
       });
 
       behaviours.filter(function(behaviour) {
-        return !!behaviour.onCreate;
+        return !!behaviour.create;
       })
       .forEach(function(behaviour) {
-        behaviour.onCreate.call(buildingGroup, this, params);
+        behaviour.create.call(buildingGroup, this, params);
       }.bind(this));
     }
 

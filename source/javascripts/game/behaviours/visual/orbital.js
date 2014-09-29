@@ -1,5 +1,5 @@
 sp.behaviours.visual.orbital = {
-  onCreate: function(game) {
+  create: function(game) {
     this.graphics.orbital = game.add.graphics(0, 0, this);
     this.graphics.orbital.lineStyle(2, 0xFF00FF, 1);
     this.graphics.orbital.drawRect(0, 0, 32 * 3, 32 * 4);
@@ -13,7 +13,7 @@ sp.behaviours.visual.orbital = {
     this.graphics.triggerZone.drawRect(0, 0, 32 * 3, 32);  
   },
 
-  onUpdate: function() {
+  update: function() {
     this.graphics.triggerZone.visible = !this.placed;
   }
 };

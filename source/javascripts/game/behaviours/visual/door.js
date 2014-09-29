@@ -1,5 +1,5 @@
 sp.behaviours.visual.door = {
-  onCreate: function(game) {
+  create: function(game) {
     this.graphics.triggerZone1 = game.add.graphics(0, -32, this);
     this.graphics.triggerZone1.lineStyle(1, 0x00FF00, 0.5);
     this.graphics.triggerZone1.drawRect(0, 0, 32 * 3, 32);
@@ -14,7 +14,7 @@ sp.behaviours.visual.door = {
     this.graphics.base.lineTo(32 * 3, 0);
   },
 
-  onUpdate: function() {
+  update: function() {
     this.graphics.triggerZone1.visible = 
     this.graphics.triggerZone2.visible = 
       !this.placed;
