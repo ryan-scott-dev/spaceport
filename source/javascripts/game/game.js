@@ -154,59 +154,6 @@ sp.game.runtime = (function() {
     return buildingGroup;  
   };
 
-  var orbitalVisual = {
-    onCreate: function() {
-      this.graphics.orbital = sp.game.runtime.add.graphics(0, 0, this);
-      this.graphics.orbital.lineStyle(2, 0xFF00FF, 1);
-      this.graphics.orbital.drawRect(0, 0, 32 * 3, 32 * 4);
-      
-      this.graphics.orbital.beginFill(0xFF00FF, 0.5);
-      this.graphics.orbital.drawRect(0, 0, 32 * 3, 32 * 4);
-      this.graphics.orbital.endFill();
-
-      this.graphics.triggerZone = sp.game.runtime.add.graphics(0, 128, this);
-      this.graphics.triggerZone.lineStyle(1, 0x00FF00, 0.5);
-      this.graphics.triggerZone.drawRect(0, 0, 32 * 3, 32);  
-    },
-
-    onUpdate: function() {
-      this.graphics.triggerZone.visible = !this.placed;
-    }
-  }
-
-  var wallVisual = {
-    onCreate: function() {
-      this.graphics.wall = sp.game.runtime.add.graphics(0, 0, this);
-      
-      this.graphics.wall.lineStyle(2, 0xFF1D3D, 1);
-      this.graphics.wall.moveTo(0, 0);
-      this.graphics.wall.lineTo(32 * 1, 0);
-    }
-  }
-
-  var doorVisual = {
-    onCreate: function() {
-      this.graphics.triggerZone1 = sp.game.runtime.add.graphics(0, -32, this);
-      this.graphics.triggerZone1.lineStyle(1, 0x00FF00, 0.5);
-      this.graphics.triggerZone1.drawRect(0, 0, 32 * 3, 32);
-
-      this.graphics.triggerZone2 = sp.game.runtime.add.graphics(0, 0, this);
-      this.graphics.triggerZone2.lineStyle(1, 0x00FF00, 0.5);
-      this.graphics.triggerZone2.drawRect(0, 0, 32 * 3, 32);
-    
-      this.graphics.base = sp.game.runtime.add.graphics(0, 0, this);
-      this.graphics.base.lineStyle(2, 0x1D3DFF, 1);
-      this.graphics.base.moveTo(0, 0);
-      this.graphics.base.lineTo(32 * 3, 0);
-    },
-
-    onUpdate: function() {
-      this.graphics.triggerZone1.visible = 
-      this.graphics.triggerZone2.visible = 
-        !this.placed;
-    }
-  }
-
   function lookupBuildingPivot(type) {
     var building_pivots = {
       orbital: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
@@ -249,28 +196,12 @@ sp.game.runtime = (function() {
     },
   };
 
-  var loaderVisual = {
-    onCreate: function() {
-      this.graphics.triggerZone = sp.game.runtime.add.graphics(0, -32, this);
-      this.graphics.triggerZone.lineStyle(1, 0x00FF00, 0.5);
-      this.graphics.triggerZone.drawRect(0, 0, 32, 32);
-    
-      this.graphics.base = sp.game.runtime.add.graphics(0, 0, this);
-      this.graphics.base.lineStyle(2, 0x4D3D1F, 1);
-      this.graphics.base.drawRect(0, 0, 32, 32);
-    },
-
-    onUpdate: function() {
-      this.graphics.triggerZone.visible = !this.placed;
-    }
-  }
-
   function lookupBuildingBehaviours(type) {
     var building_behaviours = {
-      loader:   [loaderBehaviour, loaderVisual],
-      door:     [doorVisual],
-      orbital:  [orbitalVisual],
-      wall:     [wallVisual],
+      loader:   [loaderBehaviour, sp.behaviours.visual.loader],
+      door:     [sp.behaviours.visual.door],
+      orbital:  [sp.behaviours.visual.orbital],
+      wall:     [sp.behaviours.visual.wall],
     };
     return building_behaviours[type];
   };
