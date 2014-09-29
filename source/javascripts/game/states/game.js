@@ -89,7 +89,7 @@ Spaceport.Game.prototype = {
   },
 
   addRobot: function(robotTemplate) {
-    var newRobot = this.createCargoRobot(robotTemplate.id, robotTemplate.x, robotTemplate.y, robotTemplate.rotation); 
+    var newRobot = this.createCargoRobot(robotTemplate); 
     this.robots.push(newRobot);
   },
 
@@ -180,12 +180,12 @@ Spaceport.Game.prototype = {
     return Spaceport.Config.Buildings[type].components;
   },
 
-  createCargoRobot: function(id, x, y, rotation) {
+  createCargoRobot: function(params) {
     var robot = this.add.graphics();
-    robot.id = id || chance.guid();
-    robot.x = x || 0;
-    robot.y = y || 0;
-    robot.rotation = rotation || 0;
+    robot.id = params.id || chance.guid();
+    robot.x = params.x || 0;
+    robot.y = params.y || 0;
+    robot.rotation = params.rotation || 0;
     robot.type = 'cargo';
     robot.pivot.x = (32 * 1) / 2;
     robot.pivot.y = (32 * 1) / 2;
