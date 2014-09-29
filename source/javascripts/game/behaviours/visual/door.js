@@ -1,4 +1,4 @@
-sp.behaviours.visual.door = {
+Spaceport.Behaviours.Visual.Door = {
   create: function() {
     this.graphics.triggerZone1 = this.game.add.graphics(0, -32, this);
     this.graphics.triggerZone1.lineStyle(1, 0x00FF00, 0.5);

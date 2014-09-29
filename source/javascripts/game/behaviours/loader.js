@@ -1,4 +1,4 @@
-sp.behaviours.loader = {
+Spaceport.Behaviours.Loader = {
 
   create: function(params) {
     this._spawnedRobot = this.world.findRobot(params.robotId);

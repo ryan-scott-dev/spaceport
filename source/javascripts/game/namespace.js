@@ -1,3 +1,11 @@
-sp = {};
-sp.game = {};
-sp.behaviours = {};
+Spaceport = {
+  Config: {
+    Buildings: {},
+    Robots: {}
+  },
+  
+  Behaviours: {
+    Visual: {},
+  },
+
+};

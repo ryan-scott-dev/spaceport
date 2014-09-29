@@ -1,4 +1,4 @@
-sp.behaviours.visual.loader = {
+Spaceport.Behaviours.Visual.Loader = {
   create: function() {
     this.graphics.triggerZone = this.game.add.graphics(0, -32, this);
     this.graphics.triggerZone.lineStyle(1, 0x00FF00, 0.5);

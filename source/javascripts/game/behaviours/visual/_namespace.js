@@ -1,1 +1,0 @@
-sp.behaviours.visual = {};

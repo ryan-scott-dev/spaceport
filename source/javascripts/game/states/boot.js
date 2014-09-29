@@ -1,9 +1,3 @@
-Spaceport = {
-    /* Your game can check orientated in internal loops to know if it should pause or not */
-    orientated: false
-
-};
-
 Spaceport.Boot = function (game) {
 };
 

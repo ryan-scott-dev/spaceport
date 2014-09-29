@@ -1,4 +1,4 @@
-sp.behaviours.visual.orbital = {
+Spaceport.Behaviours.Visual.Orbital = {
   create: function() {
     this.graphics.orbital = this.game.add.graphics(0, 0, this);
     this.graphics.orbital.lineStyle(2, 0xFF00FF, 1);

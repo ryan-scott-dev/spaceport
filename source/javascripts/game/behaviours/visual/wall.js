@@ -1,4 +1,4 @@
-sp.behaviours.visual.wall = {
+Spaceport.Behaviours.Visual.Wall = {
   create: function() {
     this.graphics.wall = this.game.add.graphics(0, 0, this);
     

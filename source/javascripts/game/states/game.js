@@ -173,23 +173,11 @@ Spaceport.Game.prototype = {
   },
 
   lookupBuildingPivot: function(type) {
-    var building_pivots = {
-      orbital: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
-      wall:    new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
-      door:    new Phaser.Point((32 * 3) / 2, (32 * 1) / 2),
-      loader:  new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
-    };
-    return building_pivots[type];
+    return Spaceport.Config.Buildings[type].pivot;
   },
 
   lookupBuildingBehaviours: function(type) {
-    var building_behaviours = {
-      loader:   [sp.behaviours.visual.loader, sp.behaviours.loader],
-      door:     [sp.behaviours.visual.door],
-      orbital:  [sp.behaviours.visual.orbital],
-      wall:     [sp.behaviours.visual.wall],
-    };
-    return building_behaviours[type];
+    return Spaceport.Config.Buildings[type].components;
   },
 
   createCargoRobot: function(id, x, y, rotation) {
