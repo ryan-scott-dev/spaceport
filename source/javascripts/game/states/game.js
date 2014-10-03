@@ -46,7 +46,7 @@ Spaceport.Game.prototype = {
       place_loader: this.input.keyboard.addKey(Phaser.Keyboard.L),
 
       cancel: this.input.keyboard.addKey(Phaser.Keyboard.ESC),
-      place: this.input.keyboard.addKey(Phaser.Keyboard.ENTER),
+      place: this.input.mousePointer,
     };
 
     this.loadState();
@@ -267,6 +267,8 @@ Spaceport.Game.prototype = {
 
     this.placing.x = this.marker.x + 16;
     this.placing.y = this.marker.y + 16;
+    
+    if (this.placing.updateSilhouette) this.placing.updateSilhouette();
   },
 
   updateCamera: function() {
@@ -283,29 +285,72 @@ Spaceport.Game.prototype = {
     }
   },
 
+  startPlacingSelectedBuilding: function() {
+    if (!this._selectedBuilding) return;
+    if (!this.placing) return;
+    if (this.placing.readyToPlace) return;
+
+    if (this._selectedBuilding == 'room') {
+      // Store the current mouse position
+    }
+
+    this.placing.readyToPlace = true;
+  },
+
+  finishPlacingSelectedBuilding: function() {
+    if (!this.placing) return;
+    if (!this.placing.readyToPlace) return;
+
+    this.placeBuilding();
+    if (this._selectedBuilding == 'room') {
+      // Create a series of wall buildings from the start position to the end position
+
+    } else {
+      // Do nothing
+    }
+  },
+
+  setSelectedBuildingType: function(type) {
+    this._selectedBuilding = type;
+    this.startPlacingBuilding(this._selectedBuilding);
+  },
+
   update: function() {
     if (this.inputActions.rotate.isDown && this.inputActions.rotate.repeats == 0) {
       this.rotateBuilding();
     }
 
-    if (this.inputActions.place.isDown && this.inputActions.place.repeats == 0) {
-      this.placeBuilding();
+    if (this.inputActions.place.isDown) {
+      this.startPlacingSelectedBuilding();
+    }
+
+    if (this.inputActions.place.isUp) {
+      this.finishPlacingSelectedBuilding();
     }
 
     if (this.inputActions.place_orbital.isDown && this.inputActions.place_orbital.repeats == 0) {
-      this.startPlacingBuilding('orbital');
+      // this.startPlacingBuilding('orbital');
+      this.setSelectedBuildingType('orbital');
     }
 
+    // if (this.inputActions.place_room.isDown && this.inputActions.place_room.repeats == 0) {
+    //   // this.startPlacingBuilding('room');
+    //   this._selectedBuilding = 'room';
+    // }
+
     if (this.inputActions.place_wall.isDown && this.inputActions.place_wall.repeats == 0) {
-      this.startPlacingBuilding('wall');
+      // this.startPlacingBuilding('wall');
+      this.setSelectedBuildingType('wall');
     }
 
     if (this.inputActions.place_door.isDown && this.inputActions.place_door.repeats == 0) {
-      this.startPlacingBuilding('door');
+      // this.startPlacingBuilding('door');
+      this.setSelectedBuildingType('door');
     }
 
     if (this.inputActions.place_loader.isDown && this.inputActions.place_loader.repeats == 0) {
-      this.startPlacingBuilding('loader');
+      // this.startPlacingBuilding('loader');
+      this.setSelectedBuildingType('loader');
     }
 
     if (this.inputActions.cancel.isDown && this.inputActions.cancel.repeats == 0) {
