@@ -50,6 +50,13 @@ Spaceport.Game.prototype = {
     };
 
     this.loadState();
+
+    this.hotzone = {
+      width: (this.game.width * 0.1),
+      height: (this.game.height * 0.1)
+    };
+
+    this.cameraMoveSpeed = 4;
   },
 
   loadState: function() {
@@ -283,6 +290,22 @@ Spaceport.Game.prototype = {
     } else if (this.cursors.down.isDown) {
       this.camera.y += 4;
     }
+
+    if (this.isPointerInsideCameraHotzone(this.input.activePointer)) {
+      this.moveCameraTowardsPointer(this.input.activePointer);
+    }
+  },
+
+  isPointerInsideCameraHotzone: function(pointer) {
+    return (pointer.position.x < this.hotzone.width) || (pointer.position.x > this.game.width - this.hotzone.width) ||
+           (pointer.position.y < this.hotzone.height) || (pointer.position.y > this.game.height - this.hotzone.height);
+  },
+
+  moveCameraTowardsPointer: function(pointer) {
+    var offset = new Phaser.Point(pointer.position.x - (this.game.width / 2.0), 
+                                  pointer.position.y - (this.game.height / 2.0)).normalize();
+    this.camera.x += offset.x * this.cameraMoveSpeed; 
+    this.camera.y += offset.y * this.cameraMoveSpeed;
   },
 
   startPlacingSelectedBuilding: function() {
