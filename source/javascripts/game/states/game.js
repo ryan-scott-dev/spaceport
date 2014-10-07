@@ -318,6 +318,8 @@ Spaceport.Game.prototype = {
 
     this.placing.destroy();
     this.placing = null;
+
+    this.updateToolbarUI();
   },
 
   updatePlacingBuilding: function() {
@@ -387,6 +389,14 @@ Spaceport.Game.prototype = {
   setSelectedBuildingType: function(type) {
     this._selectedBuilding = type;
     this.startPlacingBuilding(this._selectedBuilding);
+    this.updateToolbarUI(type);
+  },
+
+  updateToolbarUI: function(activeType) {
+    $('.active[action]').removeClass('active');  
+    if (activeType) {
+      $('[action="select-' + activeType + '"]').addClass('active');
+    }
   },
 
   update: function() {
