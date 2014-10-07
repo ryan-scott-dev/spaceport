@@ -15,6 +15,9 @@ Spaceport.Game = function (game) {
   /* input */
   this.cursors;
   this.inputActions;
+
+  /* events */
+  this.actionHandlers;
 };
 
 Spaceport.Game.prototype = {
@@ -57,6 +60,54 @@ Spaceport.Game.prototype = {
     };
 
     this.cameraMoveSpeed = 4;
+
+    this.actionHandlers = {};
+    this.bindViews('game-toolbar');
+
+    this.onAction('select-wall', function() { this.setSelectedBuildingType('wall'); });
+    this.onAction('select-room', function() { this.setSelectedBuildingType('room'); });
+    this.onAction('select-door', function() { this.setSelectedBuildingType('door'); });
+    this.onAction('select-dock', function() { this.setSelectedBuildingType('orbital'); });
+  },
+
+  bindViews: function() {
+    for (var i = 0; i < arguments.length; i++) {
+      var view = arguments[i]
+      this.bindView($("[view='" + view + "']"));
+    }
+  },
+
+  bindView: function(viewElement) {
+    var elementsWithActions = $('[action]', viewElement);
+    elementsWithActions.on('click', function(evt) {
+      this.handleElementClicked(evt);
+    }.bind(this));
+  },
+
+  handleElementClicked: function(evt) {
+    evt.preventDefault();
+
+    var element = $(evt.target);
+    var action = element.attr('action');
+
+    if (!action) {
+      console.log("No action attribute defined for this element", element);
+    }
+    this.raiseAction(action);
+  },
+
+  raiseAction: function(action) {
+    console.log('Action raised: ' + action);
+    (this.actionHandlers[action] || []).forEach(function(handler) {
+      handler.call(this);
+    }.bind(this));
+  },
+
+  onAction: function(action, handler) {
+    if (!this.actionHandlers[action]) { 
+      this.actionHandlers[action] = [];
+    }
+    this.actionHandlers[action].push(handler);
   },
 
   loadState: function() {

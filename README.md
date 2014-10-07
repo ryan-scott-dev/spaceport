@@ -10,7 +10,12 @@ Gameplay
 
 ## Building Placement
 
-- Camera has hot-zones around the border to scroll around
+- [X] Camera has hot-zones around the border to scroll around
+- Buildings can be clicked and dragged from a toolbar
+  - Visual and audio cue
+- Buildings can be selected and placed from a toolbar
+  - Visual cue what was selected
+
 - Rooms can have arrows to indicate making them bigger/resize
   - Buildings can have a 'resizeable' configuration option
   - Could also be applied to docks/doors?/
@@ -31,11 +36,7 @@ Gameplay
   - Undo building placement
   - Undo building deletion
   - Build mode stack?
-- Buildings can be clicked and dragged from a toolbar
-  - Visual and audio cue
-- Buildings can be selected and placed from a toolbar
-  - Visual cue what was selected
-  
+
 ## Cargo Unloading/Loading
 
 ## Robots
