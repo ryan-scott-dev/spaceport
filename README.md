@@ -11,11 +11,14 @@ Gameplay
 ## Building Placement
 
 - [X] Camera has hot-zones around the border to scroll around
-- Buildings can be clicked and dragged from a toolbar
-  - Visual and audio cue
 - Buildings can be selected and placed from a toolbar
   - Visual cue what was selected
+- Buildings can have different placement rules
+  - Clicked and dragged
+  - Clears the current selection after placing
 
+- Buildings can be clicked and dragged from a toolbar
+  - Visual and audio cue
 - Rooms can have arrows to indicate making them bigger/resize
   - Buildings can have a 'resizeable' configuration option
   - Could also be applied to docks/doors?/

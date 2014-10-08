@@ -25,7 +25,7 @@ canvas {
   top: 20px;
   padding: 6px 0;
   border-radius: 6px;
-  
+
   button {
     border: none;
     background: red;
@@ -36,6 +36,14 @@ canvas {
     height: 60px;
     outline: none;
     
+    &[disabled] {
+      background: gray;
+    }
+
+    &.active {
+      border: 1px solid blue;
+    }
+
     &:hover {
       box-shadow: 0 0 3px black;
     }
