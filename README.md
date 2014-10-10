@@ -11,8 +11,8 @@ Gameplay
 ## Building Placement
 
 - [X] Camera has hot-zones around the border to scroll around
-- Buildings can be selected and placed from a toolbar
-  - Visual cue what was selected
+- [X] Buildings can be selected and placed from a toolbar
+  - [X] Visual cue what was selected
 - Buildings can have different placement rules
   - Clicked and dragged
   - Clears the current selection after placing

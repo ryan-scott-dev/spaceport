@@ -67,7 +67,7 @@ Spaceport.Game.prototype = {
     this.onAction('select-wall', function() { this.setSelectedBuildingType('wall'); });
     this.onAction('select-room', function() { this.setSelectedBuildingType('room'); });
     this.onAction('select-door', function() { this.setSelectedBuildingType('door'); });
-    this.onAction('select-dock', function() { this.setSelectedBuildingType('orbital'); });
+    this.onAction('select-orbital', function() { this.setSelectedBuildingType('orbital'); });
   },
 
   bindViews: function() {
@@ -238,6 +238,10 @@ Spaceport.Game.prototype = {
     return Spaceport.Config.Buildings[type].components;
   },
 
+  lookupBuildingPlacementBehaviours: function(type) {
+    return Spaceport.Config.Buildings[type].placement_behaviours;
+  },
+
   createCargoRobot: function(params) {
     var robot = this.add.graphics();
     robot.id = params.id || chance.guid();
@@ -296,15 +300,22 @@ Spaceport.Game.prototype = {
   placeBuilding: function() {
     if (!this.placing) return;
 
-    console.log('Placed Building');
     this.placing.placed = true;
     this.addBuilding(this.placing);
     this.saveState();
-    /* TODO - Register building created */
+    
     /* TODO - Make Sound Effect */
-    /* TODO - Remove silhouette and add 'proper' implementation */
 
+    var placementBehaviours = this.lookupBuildingPlacementBehaviours(this.placing.type);
     this.stopPlacingBuilding();
+    if (placementBehaviours.indexOf('deselect') == -1) {
+      this.resetPlacing();
+    }
+  },
+
+  resetPlacing: function() {
+    this.setSelectedBuildingType(this._selectedBuilding);
+    // this.startPlacingSelectedBuilding();
   },
 
   startPlacingBuilding: function(type) {
@@ -380,7 +391,6 @@ Spaceport.Game.prototype = {
     this.placeBuilding();
     if (this._selectedBuilding == 'room') {
       // Create a series of wall buildings from the start position to the end position
-
     } else {
       // Do nothing
     }
@@ -388,6 +398,7 @@ Spaceport.Game.prototype = {
 
   setSelectedBuildingType: function(type) {
     this._selectedBuilding = type;
+    this.stopPlacingBuilding();
     this.startPlacingBuilding(this._selectedBuilding);
     this.updateToolbarUI(type);
   },
