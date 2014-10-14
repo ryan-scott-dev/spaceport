@@ -33,7 +33,6 @@ Spaceport.Boot.prototype = {
             this.scale.pageAlignHorizontally = true;
             this.scale.pageAlignVertically = true;
             this.scale.forceOrientation(true, false);
-            this.scale.hasResized.add(this.gameResized, this);
             this.scale.enterIncorrectOrientation.add(this.enterIncorrectOrientation, this);
             this.scale.leaveIncorrectOrientation.add(this.leaveIncorrectOrientation, this);
             this.scale.setScreenSize(true);
@@ -50,7 +49,7 @@ Spaceport.Boot.prototype = {
 
         Spaceport.orientated = false;
 
-        document.getElementById('orientation').style.display = 'block';
+        // document.getElementById('orientation').style.display = 'block';
 
     },
 
@@ -58,7 +57,7 @@ Spaceport.Boot.prototype = {
 
         Spaceport.orientated = true;
 
-        document.getElementById('orientation').style.display = 'none';
+        // document.getElementById('orientation').style.display = 'none';
 
     }
 
