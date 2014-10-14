@@ -355,9 +355,18 @@ Spaceport.Game.prototype = {
       this.camera.y += 4;
     }
 
-    if (this.isPointerInsideCameraHotzone(this.input.activePointer)) {
-      this.moveCameraTowardsPointer(this.input.activePointer);
+    this.dragCameraTowardPointer(this.input.activePointer);
+  },
+
+  dragCameraTowardPointer: function(pointer) {
+    if (pointer.isDown) {
+        if (this.lastPointerPosition) {
+            this.game.camera.x += this.lastPointerPosition.x - pointer.position.x;
+            this.game.camera.y += this.lastPointerPosition.y - pointer.position.y;
+        }
+        this.lastPointerPosition = pointer.position.clone();
     }
+    if (pointer.isUp) { this.lastPointerPosition = null; }
   },
 
   isPointerInsideCameraHotzone: function(pointer) {
