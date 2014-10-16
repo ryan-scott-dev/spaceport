@@ -1,7 +1,7 @@
 Spaceport.Behaviours.Loader = {
 
   create: function(params) {
-    this._spawnedRobot = this.world.findRobot(params.robotId);
+    this._spawnedRobot = this.spWorld.findRobot(params.robotId);
   },
 
   ensureRobotSpawned: function() {
@@ -15,8 +15,8 @@ Spaceport.Behaviours.Loader = {
   },
 
   spawnRobot: function() {
-    this._spawnedRobot = this.world.createCargoRobot( { x: this.x, y: this.y, rotation: this.rotation } );
-    this.world.addNewRobot(this._spawnedRobot);
+    this._spawnedRobot = this.spWorld.createCargoRobot( { x: this.x, y: this.y, rotation: this.rotation } );
+    this.spWorld.addNewRobot(this._spawnedRobot);
   },
 
   getProperties: function() {

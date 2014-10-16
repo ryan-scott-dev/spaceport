@@ -1,27 +1,31 @@
 Spaceport.Config.Buildings = {
 
   orbital: {
-    components: [Spaceport.Behaviours.Visual.Orbital],
+    sprite: 'test_wall_sprite',
+    components: [],
     pivot: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
     placement_behaviours: ['single', 'deselect'],
   },
 
   loader: {
-    components: [Spaceport.Behaviours.Visual.Loader, Spaceport.Behaviours.Loader],
+    sprite: 'test_wall_sprite',
+    components: [Spaceport.Behaviours.Loader],
     pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
     placement_behaviours: ['single', 'deselect'],
   },
 
   door: {
-    components: [Spaceport.Behaviours.Visual.Door],
-    pivot: new Phaser.Point((32 * 3) / 2, (32 * 1) / 2),
-    placement_behaviours: ['single'],
+    sprite: 'test_door_sprite',
+    components: [],
+    pivot: new Phaser.Point((32 * 3) / 2, (32 * 1) / 2 + 6),
+    placement_behaviours: ['single', 'deselect'],
   },
 
   wall: {
-    components: [Spaceport.Behaviours.Visual.Wall],
-    pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
-    placement_behaviours: ['single', 'drag'],
+    sprite: 'test_wall_sprite',
+    components: [],
+    pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2 + 4),
+    placement_behaviours: ['single', 'drag', 'deselect'],
   }
 
 };

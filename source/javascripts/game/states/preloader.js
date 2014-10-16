@@ -16,6 +16,8 @@ Spaceport.Preloader.prototype = {
     this.load.setPreloadSprite(this.preloadBar);
 
     this.load.image('tiles', 'assets/tmw_desert_spacing.png');
+    this.load.image('test_door_sprite', 'assets/door.png');
+    this.load.image('test_wall_sprite', 'assets/wall.png');
   },
 
   create: function () {

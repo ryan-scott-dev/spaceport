@@ -5,6 +5,8 @@ Spaceport.Game = function (game) {
   this.robots;
   this.placing;
 
+  this.selected;
+
   /* ui */
 
   this.map;
@@ -34,7 +36,8 @@ Spaceport.Game.prototype = {
 
     this.stage.smoothed = false;
     this.stage.backgroundColor = '#2d2d2d';
-
+    // Look at this.stage.setInteractionDelegate for events on other elements
+    
     this.marker = this.add.graphics();
     this.marker.lineStyle(2, 0xFFFFFF, 1);
     this.marker.drawRect(0, 0, 32, 32);
@@ -79,7 +82,7 @@ Spaceport.Game.prototype = {
 
   bindView: function(viewElement) {
     var elementsWithActions = $('[action]', viewElement);
-    elementsWithActions.on('click', function(evt) {
+    elementsWithActions.on('mousedown', function(evt) {
       this.handleElementClicked(evt);
     }.bind(this));
   },
@@ -161,20 +164,22 @@ Spaceport.Game.prototype = {
   },
 
   createBuilding: function(params) {
-    var buildingGroup = this.add.group();
-    buildingGroup.id = params.id || chance.guid();
-    buildingGroup.x = params.x || 0;
-    buildingGroup.y = params.y || 0;
-    buildingGroup.rotation = params.rotation || 0;
-    buildingGroup.type = params.type || 'unknown';
-    buildingGroup.placed = params.placed || false;
-    buildingGroup.pivot = params.pivot || this.lookupBuildingPivot(buildingGroup.type);
+    var type = params.type || 'unknown';
+    var spriteImage = params.sprite || this.lookupBuildingSprite(type)
+    var x = params.x || 0;
+    var y = params.y || 0;
+    var buildingSprite = this.add.sprite(x, y, spriteImage);
+    buildingSprite.id = params.id || chance.guid();
+    buildingSprite.rotation = params.rotation || 0;
+    buildingSprite.type = type;
+    buildingSprite.placed = params.placed || false;
+    buildingSprite.pivot = params.pivot || this.lookupBuildingPivot(type);
 
-    buildingGroup.world = this;
-    buildingGroup.graphics = {};
-    buildingGroup._behaviours = [];
+    buildingSprite.spWorld = this;
+    buildingSprite.graphics = {};
+    buildingSprite._behaviours = [];
 
-    buildingGroup.serialize = function() {
+    buildingSprite.serialize = function() {
       var properties = {
         id: this.id,
         type: this.type,
@@ -194,7 +199,7 @@ Spaceport.Game.prototype = {
       return properties;
     };
 
-    buildingGroup.addBehaviour = function(behaviour) {
+    buildingSprite.addBehaviour = function(behaviour) {
       this._behaviours.push(behaviour);
 
       for (var property in behaviour) {
@@ -204,34 +209,38 @@ Spaceport.Game.prototype = {
       }
     };
 
-    buildingGroup.update = function() {
+    buildingSprite.update = function() {
       this._behaviours.filter(function(behaviour) {
         return !!behaviour.update;
       })
       .forEach(function(behaviour) {
-        behaviour.update.call(buildingGroup);
+        behaviour.update.call(buildingSprite);
       });
     };
 
     var behaviours = this.lookupBuildingBehaviours(params.type);
     if (behaviours) {
       behaviours.forEach(function(behaviour) {
-        buildingGroup.addBehaviour(behaviour);
+        buildingSprite.addBehaviour(behaviour);
       });
 
       behaviours.filter(function(behaviour) {
         return !!behaviour.create;
       })
       .forEach(function(behaviour) {
-        behaviour.create.call(buildingGroup, params);
+        behaviour.create.call(buildingSprite, params);
       }.bind(this));
     }
 
-    return buildingGroup;  
+    return buildingSprite;  
   },
 
   lookupBuildingPivot: function(type) {
     return Spaceport.Config.Buildings[type].pivot;
+  },
+
+  lookupBuildingSprite: function(type) {
+    return Spaceport.Config.Buildings[type].sprite;
   },
 
   lookupBuildingBehaviours: function(type) {
@@ -424,11 +433,13 @@ Spaceport.Game.prototype = {
       this.rotateBuilding();
     }
 
-    if (this.inputActions.place.isDown) {
-      this.startPlacingSelectedBuilding();
-    }
+    // if (this.inputActions.place.isDown) {
+    //   this.startPlacingSelectedBuilding();
+    // }
 
-    if (this.inputActions.place.isUp) {
+    // Need to find a way to capture the release when the press started on another element
+    if (this.inputActions.place.justReleased()) {
+      this.startPlacingSelectedBuilding();
       this.finishPlacingSelectedBuilding();
     }
 

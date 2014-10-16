@@ -22,9 +22,7 @@ Spaceport.Boot.prototype = {
             this.scale.pageAlignHorizontally = true;
             this.scale.pageAlignVertically = true;
             this.scale.setScreenSize(true);
-        }
-        else
-        {
+        } else {
             this.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
             this.scale.minWidth = 480;
             this.scale.minHeight = 260;
