@@ -4,11 +4,12 @@ Spaceport.Game = function (game) {
   this.buildings;
   this.robots;
   this.placing;
+  this.placingMarker;
 
   this.selected;
+  this.startPlacing = false;
 
   /* ui */
-
   this.map;
   this.layer;
 
@@ -42,6 +43,8 @@ Spaceport.Game.prototype = {
     this.marker.lineStyle(2, 0xFFFFFF, 1);
     this.marker.drawRect(0, 0, 32, 32);
 
+    this.placingMarker = this.add.sprite(0, 0, 'placement');
+
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.inputActions = {
@@ -67,9 +70,9 @@ Spaceport.Game.prototype = {
     this.actionHandlers = {};
     this.bindViews('game-toolbar');
 
-    this.onAction('select-wall', function() { this.setSelectedBuildingType('wall'); });
-    this.onAction('select-room', function() { this.setSelectedBuildingType('room'); });
-    this.onAction('select-door', function() { this.setSelectedBuildingType('door'); });
+    this.onAction('select-wall',    function() { this.setSelectedBuildingType('wall');    });
+    this.onAction('select-room',    function() { this.setSelectedBuildingType('room');    });
+    this.onAction('select-door',    function() { this.setSelectedBuildingType('door');    });
     this.onAction('select-orbital', function() { this.setSelectedBuildingType('orbital'); });
   },
 
@@ -298,6 +301,59 @@ Spaceport.Game.prototype = {
     this.marker.x = this.layer.getTileX(this.input.activePointer.worldX) * 32;
     this.marker.y = this.layer.getTileY(this.input.activePointer.worldY) * 32;
     this.marker.visible = (this.placing == null);
+
+    this.placingMarker.x = this.marker.x - 6;
+    this.placingMarker.y = this.marker.y - 6;
+    this.placingMarker.visible = (this._selectedBuilding != null);
+
+    if (this.placing) {
+      this.calculatePlacementPosition();
+      this.updatePlacingSilhouette();
+      this.updatePreviousPlacementPosition();
+    }
+  },
+
+  isPlacingStartPosition: function() {
+    return this.placing && !this.startPlacing;
+  },
+
+  calculatePlacementPosition: function() {
+    var currentPosition = new Phaser.Point(
+      this.layer.getTileX(this.input.activePointer.worldX),
+      this.layer.getTileY(this.input.activePointer.worldY));
+
+    if (this.isPlacingStartPosition()) {
+      this._currentStartPlacementPosition = currentPosition;
+    } else {
+      this._currentEndPlacementPosition = currentPosition;
+    }
+  },
+
+  updatePreviousPlacementPosition: function() {
+    this._lastStartPlacementPosition = this._currentStartPlacementPosition;
+    this._lastEndPlacementPosition = this._currentEndPlacementPosition;
+  },
+
+  startPlacingMoved: function() {
+    return this._lastStartPlacementPosition && 
+           this._currentStartPlacementPosition &&
+          !this._lastStartPlacementPosition.equals(this._currentStartPlacementPosition);
+  },
+
+  endPlacingMoved: function() {
+    return this._lastEndPlacementPosition &&
+           this._currentEndPlacementPosition &&
+          !this._lastEndPlacementPosition.equals(this._currentEndPlacementPosition);
+  },
+
+  updatePlacingSilhouette: function() {
+    if (this.startPlacingMoved() || this.endPlacingMoved()) {
+      this.generatePlacingSilhouette();
+    }
+  },
+
+  generatePlacingSilhouette: function() {
+    console.log('Generate the placing silhouette');
   },
 
   rotateBuilding: function() {
@@ -331,10 +387,14 @@ Spaceport.Game.prototype = {
     if (this.placing) return;
 
     this.placing = this.createBuilding({ type: type });
+    this.calculatePlacementPosition();
   },
 
   stopPlacingBuilding: function() {
     if (!this.placing) return;
+
+    this._selectedBuilding = null;
+    this.startPlacing = false;
 
     this.placing.destroy();
     this.placing = null;
@@ -347,8 +407,7 @@ Spaceport.Game.prototype = {
 
     this.placing.x = this.marker.x + 16;
     this.placing.y = this.marker.y + 16;
-    
-    if (this.placing.updateSilhouette) this.placing.updateSilhouette();
+    this.placing.visible = this.startPlacing;
   },
 
   updateCamera: function() {
@@ -364,7 +423,9 @@ Spaceport.Game.prototype = {
       this.camera.y += 4;
     }
 
-    this.dragCameraTowardPointer(this.input.activePointer);
+    if (!this._selectedBuilding) {
+      this.dragCameraTowardPointer(this.input.activePointer);  
+    }
   },
 
   dragCameraTowardPointer: function(pointer) {
@@ -393,19 +454,20 @@ Spaceport.Game.prototype = {
   startPlacingSelectedBuilding: function() {
     if (!this._selectedBuilding) return;
     if (!this.placing) return;
-    if (this.placing.readyToPlace) return;
+    if (this.startPlacing) return;
 
     if (this._selectedBuilding == 'room') {
       // Store the current mouse position
     }
 
-    this.placing.readyToPlace = true;
+    this.startPlacing = true;
   },
 
   finishPlacingSelectedBuilding: function() {
     if (!this.placing) return;
-    if (!this.placing.readyToPlace) return;
+    if (!this.startPlacing) return;
 
+    console.log("Placed building from, to ", this._currentStartPlacementPosition, this._currentEndPlacementPosition)
     this.placeBuilding();
     if (this._selectedBuilding == 'room') {
       // Create a series of wall buildings from the start position to the end position
@@ -433,13 +495,12 @@ Spaceport.Game.prototype = {
       this.rotateBuilding();
     }
 
-    // if (this.inputActions.place.isDown) {
-    //   this.startPlacingSelectedBuilding();
-    // }
+    if (this.inputActions.place.isDown) {
+      this.startPlacingSelectedBuilding();
+    }
 
     // Need to find a way to capture the release when the press started on another element
     if (this.inputActions.place.justReleased()) {
-      this.startPlacingSelectedBuilding();
       this.finishPlacingSelectedBuilding();
     }
 

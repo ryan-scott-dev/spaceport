@@ -13,6 +13,14 @@ Gameplay
 - [X] Camera has hot-zones around the border to scroll around
 - [X] Buildings can be selected and placed from a toolbar
   - [X] Visual cue what was selected
+
+
+- Click and drag
+  - Different preview to what is placed
+  - Preview is generally a dot for the start position
+    - Walls show the buildings (wall segments) that will be generated from the drag
+    - Other 'zones' show what buildings will be placed within that zone
+
 - Buildings can have different placement rules
   - Clicked and dragged
   - Clears the current selection after placing
