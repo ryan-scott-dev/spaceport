@@ -4,10 +4,13 @@ Spaceport.Game = function (game) {
   this.buildings;
   this.robots;
   this.placing;
-  this.placingMarker;
+  
+  this.startPlacingMarker;
+  this.endPlacingMarker;
 
   this.selected;
-  this.startPlacing = false;
+  this.startPlacing;
+  this.placementSilhouettes;
 
   /* ui */
   this.map;
@@ -29,9 +32,12 @@ Spaceport.Game.prototype = {
 
     this.buildings = [];
     this.robots = [];
+    this.placementSilhouettes = [];
+    this._placingPositions = [];
+
     this.map = this.add.tilemap();
     this.map.addTilesetImage('tiles');
-    
+
     this.layer = this.map.create('Ground', 40, 30, 32, 32);
     this.layer.resizeWorld();
 
@@ -43,7 +49,8 @@ Spaceport.Game.prototype = {
     this.marker.lineStyle(2, 0xFFFFFF, 1);
     this.marker.drawRect(0, 0, 32, 32);
 
-    this.placingMarker = this.add.sprite(0, 0, 'placement');
+    this.startPlacingMarker = this.add.sprite(0, 0, 'placement');
+    this.endPlacingMarker = this.add.sprite(0, 0, 'placement');
 
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -302,9 +309,19 @@ Spaceport.Game.prototype = {
     this.marker.y = this.layer.getTileY(this.input.activePointer.worldY) * 32;
     this.marker.visible = (this.placing == null);
 
-    this.placingMarker.x = this.marker.x - 6;
-    this.placingMarker.y = this.marker.y - 6;
-    this.placingMarker.visible = (this._selectedBuilding != null);
+    var currentPosition = (this._currentStartPlacementPosition || new Phaser.Point()).clone();
+    this.startPlacingMarker.x = currentPosition.x - 6;
+    this.startPlacingMarker.y = currentPosition.y - 6;
+    this.startPlacingMarker.visible = (this._selectedBuilding != null);
+
+    if (this._placingPositions.length > 1) {
+      var endPosition = this._placingPositions[this._placingPositions.length - 1];
+      this.endPlacingMarker.x = endPosition.x - 6;
+      this.endPlacingMarker.y = endPosition.y - 6;  
+    }
+    this.endPlacingMarker.visible = (this._selectedBuilding != null && 
+                                     this._currentEndPlacementPosition != undefined &&
+                                     this._placingPositions.length > 1);
 
     if (this.placing) {
       this.calculatePlacementPosition();
@@ -319,11 +336,12 @@ Spaceport.Game.prototype = {
 
   calculatePlacementPosition: function() {
     var currentPosition = new Phaser.Point(
-      this.layer.getTileX(this.input.activePointer.worldX),
-      this.layer.getTileY(this.input.activePointer.worldY));
+      Phaser.Math.snapTo(this.input.activePointer.worldX, 32),
+      Phaser.Math.snapTo(this.input.activePointer.worldY, 32));
 
     if (this.isPlacingStartPosition()) {
       this._currentStartPlacementPosition = currentPosition;
+      this._currentEndPlacementPosition = undefined;
     } else {
       this._currentEndPlacementPosition = currentPosition;
     }
@@ -352,8 +370,63 @@ Spaceport.Game.prototype = {
     }
   },
 
+  calculatePlacingPositions: function() {
+    // Find the dominate axis
+    var start = this._currentStartPlacementPosition;
+    var end = this._currentEndPlacementPosition || start;
+
+    var placementZone = new Phaser.Rectangle(start.x, start.y,  start.x - end.x, end.y - start.y);
+    var width = Math.abs(placementZone.width);
+    var height = Math.abs(placementZone.height);
+    var placingPositions = [];
+    var buildingWidth = 32;
+    var buildingHeight = 32;
+    var basePosition = start.clone();
+
+    if (width > height) {      
+      // Width is the dominate axis
+      console.log("Width: ", width);
+      var numberOfBuildings = width / buildingWidth;
+      // Determine how many buildings can be fit....
+      for (var i = 0; i < numberOfBuildings; i++) {
+        var buildingPosition = basePosition.clone();
+        buildingPosition.x = start.x + (i * buildingWidth);
+        placingPositions.push(buildingPosition);
+      }
+
+    } else {
+      // Height is the dominate axis
+      var numberOfBuildings = height / buildingHeight;
+      console.log("Height: ", height);
+
+      // Determine how many buildings can be fit....
+      for (var i = 0; i < numberOfBuildings; i++) {
+        var buildingPosition = basePosition.clone();
+        buildingPosition.y = start.y + (i * buildingHeight);
+        placingPositions.push(buildingPosition);
+      }
+    }
+
+    return placingPositions;
+  },
+
   generatePlacingSilhouette: function() {
-    console.log('Generate the placing silhouette');
+    this.clearPlacementSilhouettes();
+
+    // Generate new silhouettes
+    this._placingPositions = this.calculatePlacingPositions();
+    this._placingPositions.forEach(function(placemnetPosition) {
+      // Generate new building at the placement position
+    });
+
+    console.log("Generated buildings at positions: ", this._placingPositions.map(function(placingPosition) { return placingPosition.toString(); }));
+  },
+
+  clearPlacementSilhouettes: function() {
+    this.placementSilhouettes.forEach(function(placementSilhouette) {
+      placementSilhouette.destroy();
+    });
+    this.placementSilhouettes.length = 0;
   },
 
   rotateBuilding: function() {
@@ -467,7 +540,10 @@ Spaceport.Game.prototype = {
     if (!this.placing) return;
     if (!this.startPlacing) return;
 
-    console.log("Placed building from, to ", this._currentStartPlacementPosition, this._currentEndPlacementPosition)
+    console.log("Placed building from, to ", 
+      this._currentStartPlacementPosition.toString(), 
+      this._currentEndPlacementPosition.toString());
+
     this.placeBuilding();
     if (this._selectedBuilding == 'room') {
       // Create a series of wall buildings from the start position to the end position
