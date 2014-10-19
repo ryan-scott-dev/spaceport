@@ -385,10 +385,10 @@ Spaceport.Game.prototype = {
 
     if (width > height) {      
       // Width is the dominate axis
-      console.log("Width: ", width);
       var numberOfBuildings = width / buildingWidth;
+
       // Determine how many buildings can be fit....
-      for (var i = 0; i < numberOfBuildings; i++) {
+      for (var i = 1; i < numberOfBuildings; i++) {
         var buildingPosition = basePosition.clone();
         buildingPosition.x = start.x + (i * buildingWidth);
         placingPositions.push(buildingPosition);
@@ -397,10 +397,9 @@ Spaceport.Game.prototype = {
     } else {
       // Height is the dominate axis
       var numberOfBuildings = height / buildingHeight;
-      console.log("Height: ", height);
-
+      
       // Determine how many buildings can be fit....
-      for (var i = 0; i < numberOfBuildings; i++) {
+      for (var i = 1; i < numberOfBuildings; i++) {
         var buildingPosition = basePosition.clone();
         buildingPosition.y = start.y + (i * buildingHeight);
         placingPositions.push(buildingPosition);
@@ -410,19 +409,49 @@ Spaceport.Game.prototype = {
     return placingPositions;
   },
 
+  generatePlacingBuildings: function() {
+    this._placingPositions = this.calculatePlacingPositions();
+    var buildingType = this._selectedBuilding;
+
+    var startPosition = this._currentStartPlacementPosition;
+    var endPosition = startPosition;
+    var rotate = false;
+
+    if (this._placingPositions.length > 1) {
+      startPosition = this._placingPositions[0]; 
+      endPosition = this._placingPositions[this._placingPositions.length - 1]; 
+      rotate = (startPosition.y != endPosition.y); 
+    }
+
+    return this._placingPositions.map(function(placementPosition) {
+      // Generate new building at the placement position
+      var buildingParams = {
+        type: buildingType, 
+        x: placementPosition.x - 16, 
+        y: placementPosition.y + 16,
+      };
+
+      if (rotate) {
+        buildingParams.rotation = Math.PI / 2;
+        buildingParams.y = placementPosition.y - 16;
+      }
+
+      return this.createBuilding(buildingParams);
+    }.bind(this));
+  },
+
   generatePlacingSilhouette: function() {
     this.clearPlacementSilhouettes();
 
     // Generate new silhouettes
-    this._placingPositions = this.calculatePlacingPositions();
-    this._placingPositions.forEach(function(placemnetPosition) {
-      // Generate new building at the placement position
-    });
+    this.placementSilhouettes = this.generatePlacingBuildings();
 
     console.log("Generated buildings at positions: ", this._placingPositions.map(function(placingPosition) { return placingPosition.toString(); }));
   },
 
   clearPlacementSilhouettes: function() {
+    if (!this.placementSilhouettes) return;
+
     this.placementSilhouettes.forEach(function(placementSilhouette) {
       placementSilhouette.destroy();
     });
@@ -444,11 +473,8 @@ Spaceport.Game.prototype = {
     
     /* TODO - Make Sound Effect */
 
-    var placementBehaviours = this.lookupBuildingPlacementBehaviours(this.placing.type);
     this.stopPlacingBuilding();
-    if (placementBehaviours.indexOf('deselect') == -1) {
-      this.resetPlacing();
-    }
+    this.resetPlacing();
   },
 
   resetPlacing: function() {
@@ -544,12 +570,15 @@ Spaceport.Game.prototype = {
       this._currentStartPlacementPosition.toString(), 
       this._currentEndPlacementPosition.toString());
 
-    this.placeBuilding();
-    if (this._selectedBuilding == 'room') {
-      // Create a series of wall buildings from the start position to the end position
-    } else {
-      // Do nothing
-    }
+    var buildings = this.generatePlacingBuildings();
+    buildings.forEach(function(building) {
+      building.placed = true;
+      this.addBuilding(building);
+    }.bind(this));
+    
+    this.saveState();
+
+    this.stopPlacingBuilding();
   },
 
   setSelectedBuildingType: function(type) {
