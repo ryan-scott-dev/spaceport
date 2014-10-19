@@ -385,9 +385,12 @@ Spaceport.Game.prototype = {
     if (width > height) {      
       // Width is the dominate axis
       var numberOfBuildings = width / buildingWidth;
+      if (start.x > end.x) {
+        start = end;
+      }
 
       // Determine how many buildings can be fit....
-      for (var i = 1; i < numberOfBuildings; i++) {
+      for (var i = 1; i <= numberOfBuildings; i++) {
         var buildingPosition = basePosition.clone();
         buildingPosition.x = start.x + (i * buildingWidth);
         placingPositions.push(buildingPosition);
@@ -396,9 +399,12 @@ Spaceport.Game.prototype = {
     } else {
       // Height is the dominate axis
       var numberOfBuildings = height / buildingHeight;
+      if (start.y > end.y) {
+        start = end;
+      }
       
       // Determine how many buildings can be fit....
-      for (var i = 1; i < numberOfBuildings; i++) {
+      for (var i = 1; i <= numberOfBuildings; i++) {
         var buildingPosition = basePosition.clone();
         buildingPosition.y = start.y + (i * buildingHeight);
         placingPositions.push(buildingPosition);
