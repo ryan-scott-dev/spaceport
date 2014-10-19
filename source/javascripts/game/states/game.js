@@ -313,11 +313,6 @@ Spaceport.Game.prototype = {
     
     // Start, and End Marker Positions
 
-    var currentPosition = (this.buildingPlacement.currentStartPlacementPosition || new Phaser.Point()).clone();
-    this.startPlacingMarker.x = currentPosition.x - 6;
-    this.startPlacingMarker.y = currentPosition.y - 6;
-    this.startPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null);
-
     if (this.buildingPlacement.placingPositions.length > 1) {
       var startPosition = this.buildingPlacement.placingPositions[0];
       var endPosition = this.buildingPlacement.placingPositions[this.buildingPlacement.placingPositions.length - 1];
@@ -333,13 +328,27 @@ Spaceport.Game.prototype = {
       } else {
         this.startPlacingMarker.x -= 32;
       }
+    } else {
+      var currentPosition = (this.buildingPlacement.currentStartPlacementPosition || new Phaser.Point()).clone();
+      this.startPlacingMarker.x = currentPosition.x - 6;
+      this.startPlacingMarker.y = currentPosition.y - 6; 
     }
+
     this.startPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null);
     this.endPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null && 
                                      this.buildingPlacement.currentEndPlacementPosition != undefined &&
                                      this.buildingPlacement.placingPositions.length > 1);
 
     this.buildingPlacement.update();
+  },
+
+  placeBuildings: function(buildings) {
+    buildings.forEach(function(building) {
+      building.placed = true;
+      this.addBuilding(building);
+    }.bind(this));
+    
+    this.saveState();
   },
 
   startPlacingSelectedBuilding: function() {

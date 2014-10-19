@@ -221,12 +221,7 @@ Spaceport.BuildingPlacement.mixin({
       this.currentEndPlacementPosition.toString());
 
     var buildings = this.generatePlacingBuildings();
-    buildings.forEach(function(building) {
-      building.placed = true;
-      this.game.addBuilding(building);
-    }.bind(this));
-    
-    this.game.saveState();
+    this.game.placeBuildings(buildings);
 
     this.stopPlacingBuilding();
   },
