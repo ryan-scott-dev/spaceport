@@ -55,7 +55,6 @@ Spaceport.Game.prototype = {
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.inputActions = {
-      rotate: this.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR ),
       place_orbital: this.input.keyboard.addKey(Phaser.Keyboard.O),
       place_wall: this.input.keyboard.addKey(Phaser.Keyboard.W),
       place_door: this.input.keyboard.addKey(Phaser.Keyboard.D),
@@ -307,7 +306,7 @@ Spaceport.Game.prototype = {
   updateMarker: function () {
     this.marker.x = this.layer.getTileX(this.input.activePointer.worldX) * 32;
     this.marker.y = this.layer.getTileY(this.input.activePointer.worldY) * 32;
-    this.marker.visible = (this.placing == null);
+    this.marker.visible = (!this.placing);
 
     var currentPosition = (this._currentStartPlacementPosition || new Phaser.Point()).clone();
     this.startPlacingMarker.x = currentPosition.x - 6;
@@ -458,55 +457,23 @@ Spaceport.Game.prototype = {
     this.placementSilhouettes.length = 0;
   },
 
-  rotateBuilding: function() {
-    if (!this.placing) return;
-
-    this.placing.rotation += Math.PI / 2;
-  },
-
-  placeBuilding: function() {
-    if (!this.placing) return;
-
-    this.placing.placed = true;
-    this.addBuilding(this.placing);
-    this.saveState();
-    
-    /* TODO - Make Sound Effect */
-
-    this.stopPlacingBuilding();
-    this.resetPlacing();
-  },
-
-  resetPlacing: function() {
-    this.setSelectedBuildingType(this._selectedBuilding);
-    // this.startPlacingSelectedBuilding();
-  },
-
   startPlacingBuilding: function(type) {
     if (this.placing) return;
 
-    this.placing = this.createBuilding({ type: type });
+    this.placing = true;
     this.calculatePlacementPosition();
   },
 
   stopPlacingBuilding: function() {
     if (!this.placing) return;
 
+    this.clearPlacementSilhouettes();
+
     this._selectedBuilding = null;
     this.startPlacing = false;
-
-    this.placing.destroy();
-    this.placing = null;
+    this.placing = false;
 
     this.updateToolbarUI();
-  },
-
-  updatePlacingBuilding: function() {
-    if (!this.placing) return;
-
-    this.placing.x = this.marker.x + 16;
-    this.placing.y = this.marker.y + 16;
-    this.placing.visible = this.startPlacing;
   },
 
   updateCamera: function() {
@@ -596,10 +563,6 @@ Spaceport.Game.prototype = {
   },
 
   update: function() {
-    if (this.inputActions.rotate.isDown && this.inputActions.rotate.repeats == 0) {
-      this.rotateBuilding();
-    }
-
     if (this.inputActions.place.isDown) {
       this.startPlacingSelectedBuilding();
     }
@@ -637,8 +600,6 @@ Spaceport.Game.prototype = {
     if (this.inputActions.cancel.isDown && this.inputActions.cancel.repeats == 0) {
       this.stopPlacingBuilding();
     }
-
-    this.updatePlacingBuilding();
 
     this.updateCamera();
     this.updateMarker();
