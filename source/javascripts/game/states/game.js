@@ -43,7 +43,7 @@ Spaceport.Game.prototype = {
     this.marker.lineStyle(2, 0xFFFFFF, 1);
     this.marker.drawRect(0, 0, 32, 32);
 
-    this.buildingPlacement = new Spaceport.BuildingPlacement({ game: this });
+    this.buildingPlacement = null;
     this.cursors = this.input.keyboard.createCursorKeys();
 
     this.inputActions = {
@@ -302,10 +302,12 @@ Spaceport.Game.prototype = {
   updateMarker: function () {
     this.marker.x = this.layer.getTileX(this.input.activePointer.worldX) * 32;
     this.marker.y = this.layer.getTileY(this.input.activePointer.worldY) * 32;
-    this.marker.visible = (!this.buildingPlacement.isPlacing);
+    this.marker.visible = (!this.buildingPlacement || !this.buildingPlacement.isPlacing);
   },
 
   updateBuildingPlacement: function() {
+    if (!this.buildingPlacement) return;
+
     this.buildingPlacement.update();
   },
 
@@ -323,11 +325,22 @@ Spaceport.Game.prototype = {
   },
 
   finishPlacingSelectedBuilding: function() {
-    this.buildingPlacement.finishPlacingSelectedBuilding();
+    if (this.buildingPlacement && this.buildingPlacement.canFinishPlacement()) {
+      this.buildingPlacement.finishPlacingSelectedBuilding();
+
+      this.buildingPlacement.destroy();
+      this.buildingPlacement = null;
+    }
   },
 
   setSelectedBuildingType: function(type) {
-    this.buildingPlacement.setSelectedBuildingType(type);
+    if (this.buildingPlacement) {
+      this.buildingPlacement.destroy();
+      this.buildingPlacement = null;
+    }
+    if (type) {
+      this.buildingPlacement = new Spaceport.BuildingPlacement({ game: this, type: type });  
+    }
   },
 
   updateCamera: function() {
@@ -343,7 +356,7 @@ Spaceport.Game.prototype = {
       this.camera.y += 4;
     }
 
-    if (this.buildingPlacement.noSelectedBuildingType()) {
+    if (!this.buildingPlacement || this.buildingPlacement.noSelectedBuildingType()) {
       this.dragCameraTowardPointer(this.input.activePointer);  
     }
   },

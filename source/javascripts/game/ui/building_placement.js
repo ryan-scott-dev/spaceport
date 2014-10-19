@@ -7,7 +7,10 @@ Spaceport.BuildingPlacement = function(params) {
   this.placementSilhouettes = [];
   this.placingPositions = [];
 
-  this.selectedBuildingType;
+  this.selectedBuildingType = null;
+  if (params.type) {
+    this.setSelectedBuildingType(params.type);
+  }
 
   this._currentStartPlacementPosition = null;
   this._currentEndPlacementPosition = null;
@@ -21,6 +24,14 @@ Spaceport.BuildingPlacement = function(params) {
 
 Spaceport.BuildingPlacement.mixin({
   
+  destroy: function() {
+    this.clearPlacementSilhouettes();
+    this.startPlacingMarker.destroy();
+    this.endPlacingMarker.destroy();
+
+    this.game = null;
+  },
+
   lookupBuildingTileSize: function(type) {
     return Spaceport.Config.Buildings[type].tile_size;
   },
@@ -240,10 +251,13 @@ Spaceport.BuildingPlacement.mixin({
     this.game.updateToolbarUI();
   },
 
-  finishPlacingSelectedBuilding: function() {
-    if (!this.isPlacing) return;
-    if (!this.startedPlacing) return;
+  canFinishPlacement: function() {
+    return this.isPlacing && this.startedPlacing;
+  },
 
+  finishPlacingSelectedBuilding: function() {
+    if (!this.canFinishPlacement()) return;
+    
     // console.log("Placed building from, to ", 
     //   this.currentStartPlacementPosition.toString(), 
     //   this.currentEndPlacementPosition.toString());
