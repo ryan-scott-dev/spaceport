@@ -123,13 +123,17 @@ Spaceport.Game.prototype = {
   },
 
   loadState: function() {
+    console.time('loadState');
     var state = JSON.parse(localStorage.getItem('game.state'));
     this.fromGameState(state || {});
+    console.timeEnd('loadState');
   },
 
   saveState: function() {
+    console.time('saveState');
     var state = this.gameState();
     localStorage.setItem('game.state', JSON.stringify(state));
+    console.timeEnd('saveState');
   },
 
   gameState: function() {
