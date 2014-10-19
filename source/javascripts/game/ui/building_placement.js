@@ -14,6 +14,9 @@ Spaceport.BuildingPlacement = function(params) {
 
   this._lastStartPlacementPosition = null;
   this._lastEndPlacementPosition = null;
+
+  this.startPlacingMarker = this.game.add.sprite(0, 0, 'placement');
+  this.endPlacingMarker = this.game.add.sprite(0, 0, 'placement');
 };
 
 Spaceport.BuildingPlacement.mixin({
@@ -172,6 +175,33 @@ Spaceport.BuildingPlacement.mixin({
       this.updatePlacingSilhouette();
       this.updatePreviousPlacementPosition();
     }
+
+    if (this.placingPositions.length > 1) {
+      var startPosition = this.placingPositions[0];
+      var endPosition = this.placingPositions[this.placingPositions.length - 1];
+
+      this.startPlacingMarker.x = startPosition.x - 6;
+      this.startPlacingMarker.y = startPosition.y - 6;
+
+      this.endPlacingMarker.x = endPosition.x - 6;
+      this.endPlacingMarker.y = endPosition.y - 6;  
+
+      if (startPosition.y != endPosition.y) {
+        this.startPlacingMarker.y -= 32;
+      } else {
+        this.startPlacingMarker.x -= 32;
+      }
+    } else {
+      var currentPosition = (this.currentStartPlacementPosition || new Phaser.Point()).clone();
+      this.startPlacingMarker.x = currentPosition.x - 6;
+      this.startPlacingMarker.y = currentPosition.y - 6; 
+    }
+
+    this.startPlacingMarker.visible = (this.selectedBuildingType != null);
+    this.endPlacingMarker.visible = (this.selectedBuildingType != null && 
+                                     this.currentEndPlacementPosition != undefined &&
+                                     this.placingPositions.length > 1);
+
   },
 
   startPlacingSelectedBuilding: function() {
