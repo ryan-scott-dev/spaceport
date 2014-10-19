@@ -333,13 +333,18 @@ Spaceport.Game.prototype = {
     }
   },
 
+  lookupBuildingPlacementConstructor: function(type) {
+    return type.capitalize() + 'BuildingPlacement';
+  },
+
   setSelectedBuildingType: function(type) {
     if (this.buildingPlacement) {
       this.buildingPlacement.destroy();
       this.buildingPlacement = null;
     }
     if (type) {
-      this.buildingPlacement = new Spaceport.BuildingPlacement({ game: this, type: type });  
+      var buildingPlacementConstructor = this.lookupBuildingPlacementConstructor(type);
+      this.buildingPlacement = new (Spaceport[buildingPlacementConstructor])({ game: this, type: type });  
     }
   },
 
