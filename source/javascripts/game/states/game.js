@@ -10,8 +10,6 @@ Spaceport.Game = function (game) {
   this.startPlacingMarker;
   this.endPlacingMarker;
 
-  this.selectedBuildingType;
-
   this.buildingPlacement;
 
   /* ui */
@@ -34,7 +32,6 @@ Spaceport.Game.prototype = {
 
     this.buildings = [];
     this.robots = [];
-    this._placingPositions = [];
 
     this.map = this.add.tilemap();
     this.map.addTilesetImage('tiles');
@@ -266,10 +263,6 @@ Spaceport.Game.prototype = {
     return Spaceport.Config.Buildings[type].placement_behaviours;
   },
 
-  lookupBuildingTileSize: function(type) {
-    return Spaceport.Config.Buildings[type].tile_size;
-  },
-
   createCargoRobot: function(params) {
     var robot = this.add.graphics();
     robot.id = params.id || chance.guid();
@@ -320,14 +313,14 @@ Spaceport.Game.prototype = {
     
     // Start, and End Marker Positions
 
-    var currentPosition = (this._currentStartPlacementPosition || new Phaser.Point()).clone();
+    var currentPosition = (this.buildingPlacement.currentStartPlacementPosition || new Phaser.Point()).clone();
     this.startPlacingMarker.x = currentPosition.x - 6;
     this.startPlacingMarker.y = currentPosition.y - 6;
-    this.startPlacingMarker.visible = (this.selectedBuildingType != null);
+    this.startPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null);
 
-    if (this._placingPositions.length > 1) {
-      var startPosition = this._placingPositions[0];
-      var endPosition = this._placingPositions[this._placingPositions.length - 1];
+    if (this.buildingPlacement.placingPositions.length > 1) {
+      var startPosition = this.buildingPlacement.placingPositions[0];
+      var endPosition = this.buildingPlacement.placingPositions[this.buildingPlacement.placingPositions.length - 1];
 
       this.startPlacingMarker.x = startPosition.x - 6;
       this.startPlacingMarker.y = startPosition.y - 6;
@@ -341,209 +334,24 @@ Spaceport.Game.prototype = {
         this.startPlacingMarker.x -= 32;
       }
     }
-    this.startPlacingMarker.visible = (this.selectedBuildingType != null);
-    this.endPlacingMarker.visible = (this.selectedBuildingType != null && 
-                                     this._currentEndPlacementPosition != undefined &&
-                                     this._placingPositions.length > 1);
+    this.startPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null);
+    this.endPlacingMarker.visible = (this.buildingPlacement.selectedBuildingType != null && 
+                                     this.buildingPlacement.currentEndPlacementPosition != undefined &&
+                                     this.buildingPlacement.placingPositions.length > 1);
 
-    if (this.buildingPlacement.isPlacing) {
-      this.calculatePlacementPosition();
-      this.updatePlacingSilhouette();
-      this.updatePreviousPlacementPosition();
-    }
-  },
-
-  calculatePlacementPosition: function() {
-    var currentPosition = new Phaser.Point(
-      Phaser.Math.snapTo(this.input.activePointer.worldX, 32),
-      Phaser.Math.snapTo(this.input.activePointer.worldY, 32));
-
-    if (this.buildingPlacement.isPlacingStartPosition()) {
-      this._currentStartPlacementPosition = currentPosition;
-      this._currentEndPlacementPosition = undefined;
-    } else {
-      this._currentEndPlacementPosition = currentPosition;
-    }
-  },
-
-  updatePreviousPlacementPosition: function() {
-    this._lastStartPlacementPosition = this._currentStartPlacementPosition;
-    this._lastEndPlacementPosition = this._currentEndPlacementPosition;
-  },
-
-  startPlacingMoved: function() {
-    return this._lastStartPlacementPosition && 
-           this._currentStartPlacementPosition &&
-          !this._lastStartPlacementPosition.equals(this._currentStartPlacementPosition);
-  },
-
-  endPlacingMoved: function() {
-    return this._lastEndPlacementPosition &&
-           this._currentEndPlacementPosition &&
-          !this._lastEndPlacementPosition.equals(this._currentEndPlacementPosition);
-  },
-
-  updatePlacingSilhouette: function() {
-    if (this.startPlacingMoved() || this.endPlacingMoved()) {
-      this.generatePlacingSilhouette();
-    }
-  },
-
-  calculatePlacingPositions: function() {
-    // Find the dominate axis
-    var start = this._currentStartPlacementPosition;
-    var end = this._currentEndPlacementPosition || start;
-
-    var placementZone = new Phaser.Rectangle(start.x, start.y,  start.x - end.x, end.y - start.y);
-    var width = Math.abs(placementZone.width);
-    var height = Math.abs(placementZone.height);
-    var placingPositions = [];
-    var buildingTileSize = this.lookupBuildingTileSize(this.selectedBuildingType);
-    var basePosition = start.clone();
-
-    if (width > height) {      
-      if (start.x > end.x) {
-        start = end;
-      }
-
-      var buildingWidth = 32 * buildingTileSize.x;
-      var buildingHeight = 32 * buildingTileSize.y;
-      
-      // Width is the dominate axis
-      var numberOfBuildings = Math.floor(width / buildingWidth);
-      
-      // Determine how many buildings can be fit....
-      for (var i = 1; i <= numberOfBuildings && numberOfBuildings > 0; i++) {
-        var buildingPosition = basePosition.clone();
-        buildingPosition.x = start.x + (i * buildingWidth);
-        placingPositions.push(buildingPosition);
-      }
-
-    } else {
-      var buildingWidth = 32 * buildingTileSize.y;
-      var buildingHeight = 32 * buildingTileSize.x;
-
-      // Height is the dominate axis
-      var numberOfBuildings = Math.floor(height / buildingHeight);
-      if (start.y > end.y) {
-        start = end;
-      }
-
-      // Determine how many buildings can be fit....
-      for (var i = 1; i <= numberOfBuildings && numberOfBuildings > 0; i++) {
-        var buildingPosition = basePosition.clone();
-        buildingPosition.y = start.y + (i * buildingHeight);
-        placingPositions.push(buildingPosition);
-      }
-    }
-
-    return placingPositions;
-  },
-
-  generatePlacingBuildings: function() {
-    this._placingPositions = this.calculatePlacingPositions();
-    var buildingType = this.selectedBuildingType;
-
-    var startPosition = this._currentStartPlacementPosition;
-    var endPosition = startPosition;
-    var rotate = false;
-
-    if (this._placingPositions.length > 1) {
-      startPosition = this._placingPositions[0]; 
-      endPosition = this._placingPositions[this._placingPositions.length - 1]; 
-      rotate = (startPosition.y != endPosition.y); 
-    }
-
-    return this._placingPositions.map(function(placementPosition) {
-      // Generate new building at the placement position
-      var buildingParams = {
-        type: buildingType, 
-        x: placementPosition.x - 16, 
-        y: placementPosition.y + 16,
-      };
-
-      if (rotate) {
-        buildingParams.rotation = Math.PI / 2;
-        buildingParams.y = placementPosition.y - 16;
-      }
-
-      return this.createBuilding(buildingParams);
-    }.bind(this));
-  },
-
-  generatePlacingSilhouette: function() {
-    this.clearPlacementSilhouettes();
-
-    // Generate new silhouettes
-    this.buildingPlacement.placementSilhouettes = this.generatePlacingBuildings();
-
-    console.log("Generated buildings at positions: ", this._placingPositions.map(function(placingPosition) { return placingPosition.toString(); }));
-  },
-
-  clearPlacementSilhouettes: function() {
-    if (!this.buildingPlacement.placementSilhouettes) return;
-
-    this.buildingPlacement.placementSilhouettes.forEach(function(placementSilhouette) {
-      placementSilhouette.destroy();
-    });
-    this.buildingPlacement.placementSilhouettes.length = 0;
-  },
-
-  startPlacingBuilding: function(type) {
-    if (this.buildingPlacement.isPlacing) return;
-
-    this.buildingPlacement.isPlacing = true;
-    this.calculatePlacementPosition();
-  },
-
-  stopPlacingBuilding: function() {
-    if (!this.buildingPlacement.isPlacing) return;
-
-    this.clearPlacementSilhouettes();
-
-    this.selectedBuildingType = null;
-    this.buildingPlacement.startPlacing = false;
-    this.buildingPlacement.isPlacing = false;
-
-    this.updateToolbarUI();
+    this.buildingPlacement.update();
   },
 
   startPlacingSelectedBuilding: function() {
-    if (this.noSelectedBuildingType()) return;
-    if (!this.buildingPlacement.isPlacing) return;
-    if (this.buildingPlacement.startPlacing) return;
-
-    this.buildingPlacement.startPlacing = true;
+    this.buildingPlacement.startPlacingSelectedBuilding();
   },
 
   finishPlacingSelectedBuilding: function() {
-    if (!this.buildingPlacement.isPlacing) return;
-    if (!this.buildingPlacement.startPlacing) return;
-
-    console.log("Placed building from, to ", 
-      this._currentStartPlacementPosition.toString(), 
-      this._currentEndPlacementPosition.toString());
-
-    var buildings = this.generatePlacingBuildings();
-    buildings.forEach(function(building) {
-      building.placed = true;
-      this.addBuilding(building);
-    }.bind(this));
-    
-    this.saveState();
-
-    this.stopPlacingBuilding();
+    this.buildingPlacement.finishPlacingSelectedBuilding();
   },
 
   setSelectedBuildingType: function(type) {
-    this.selectedBuildingType = type;
-    this.stopPlacingBuilding();
-    this.startPlacingBuilding(this.selectedBuildingType);
-    this.updateToolbarUI(type);
-  },
-
-  noSelectedBuildingType: function() {
-    return !this.selectedBuildingType;
+    this.buildingPlacement.setSelectedBuildingType(type);
   },
 
   updateCamera: function() {
@@ -559,7 +367,7 @@ Spaceport.Game.prototype = {
       this.camera.y += 4;
     }
 
-    if (this.noSelectedBuildingType()) {
+    if (this.buildingPlacement.noSelectedBuildingType()) {
       this.dragCameraTowardPointer(this.input.activePointer);  
     }
   },
@@ -605,32 +413,27 @@ Spaceport.Game.prototype = {
     }
 
     if (this.inputActions.place_orbital.isDown && this.inputActions.place_orbital.repeats == 0) {
-      // this.startPlacingBuilding('orbital');
       this.setSelectedBuildingType('orbital');
     }
 
     // if (this.inputActions.place_room.isDown && this.inputActions.place_room.repeats == 0) {
-    //   // this.startPlacingBuilding('room');
-    //   this.selectedBuildingType = 'room';
+    //   this.buildingPlacement.selectedBuildingType = 'room';
     // }
 
     if (this.inputActions.place_wall.isDown && this.inputActions.place_wall.repeats == 0) {
-      // this.startPlacingBuilding('wall');
       this.setSelectedBuildingType('wall');
     }
 
     if (this.inputActions.place_door.isDown && this.inputActions.place_door.repeats == 0) {
-      // this.startPlacingBuilding('door');
       this.setSelectedBuildingType('door');
     }
 
     if (this.inputActions.place_loader.isDown && this.inputActions.place_loader.repeats == 0) {
-      // this.startPlacingBuilding('loader');
       this.setSelectedBuildingType('loader');
     }
 
     if (this.inputActions.cancel.isDown && this.inputActions.cancel.repeats == 0) {
-      this.stopPlacingBuilding();
+      this.buildingPlacement.stopPlacingBuilding();
     }
 
     this.updateCamera();
