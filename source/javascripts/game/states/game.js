@@ -264,6 +264,10 @@ Spaceport.Game.prototype = {
     return Spaceport.Config.Buildings[type].placement_behaviours;
   },
 
+  lookupBuildingTileSize: function(type) {
+    return Spaceport.Config.Buildings[type].tile_size;
+  },
+
   createCargoRobot: function(params) {
     var robot = this.add.graphics();
     robot.id = params.id || chance.guid();
@@ -396,17 +400,20 @@ Spaceport.Game.prototype = {
     var width = Math.abs(placementZone.width);
     var height = Math.abs(placementZone.height);
     var placingPositions = [];
-    var buildingWidth = 32;
-    var buildingHeight = 32;
+    var buildingTileSize = this.lookupBuildingTileSize(this._selectedBuilding);
     var basePosition = start.clone();
 
     if (width > height) {      
-      // Width is the dominate axis
-      var numberOfBuildings = Math.floor(width / buildingWidth);
       if (start.x > end.x) {
         start = end;
       }
 
+      var buildingWidth = 32 * buildingTileSize.x;
+      var buildingHeight = 32 * buildingTileSize.y;
+      
+      // Width is the dominate axis
+      var numberOfBuildings = Math.floor(width / buildingWidth);
+      
       // Determine how many buildings can be fit....
       for (var i = 1; i <= numberOfBuildings && numberOfBuildings > 0; i++) {
         var buildingPosition = basePosition.clone();
@@ -415,6 +422,9 @@ Spaceport.Game.prototype = {
       }
 
     } else {
+      var buildingWidth = 32 * buildingTileSize.y;
+      var buildingHeight = 32 * buildingTileSize.x;
+
       // Height is the dominate axis
       var numberOfBuildings = Math.floor(height / buildingHeight);
       if (start.y > end.y) {

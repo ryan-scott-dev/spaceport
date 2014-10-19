@@ -17,6 +17,7 @@ Spaceport.Config.Buildings = {
   door: {
     sprite: 'test_door_sprite',
     components: [],
+    tile_size: {x: 3, y: 1},
     pivot: new Phaser.Point((32 * 3) / 2, (32 * 1) / 2 + 6),
     placement_behaviours: ['single', 'deselect'],
   },
@@ -24,6 +25,7 @@ Spaceport.Config.Buildings = {
   wall: {
     sprite: 'test_wall_sprite',
     components: [],
+    tile_size: {x: 1, y: 1},
     pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2 + 4),
     placement_behaviours: ['single', 'drag', 'deselect'],
   }
