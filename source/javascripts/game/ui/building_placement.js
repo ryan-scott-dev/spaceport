@@ -26,7 +26,7 @@ Spaceport.BuildingPlacement.mixin({
   },
 
   isPlacingStartPosition: function() {
-    return this.isPlacing && !this.startPlacing;
+    return this.isPlacing && !this.startedPlacing;
   },
 
   currentPlacementPositionMoved: function() {
@@ -138,11 +138,9 @@ Spaceport.BuildingPlacement.mixin({
 
   generatePlacingSilhouette: function() {
     this.clearPlacementSilhouettes();
-
-    // Generate new silhouettes
     this.placementSilhouettes = this.generatePlacingBuildings();
 
-    console.log("Generated buildings at positions: ", this.placingPositions.map(function(placingPosition) { return placingPosition.toString(); }));
+    // console.log("Generated buildings at positions: ", this.placingPositions.map(function(placingPosition) { return placingPosition.toString(); }));
   },
 
   updatePlacingSilhouette: function() {
@@ -207,9 +205,9 @@ Spaceport.BuildingPlacement.mixin({
   startPlacingSelectedBuilding: function() {
     if (this.noSelectedBuildingType()) return;
     if (!this.isPlacing) return;
-    if (this.startPlacing) return;
+    if (this.startedPlacing) return;
 
-    this.startPlacing = true;
+    this.startedPlacing = true;
   },
 
   noSelectedBuildingType: function() {
@@ -236,7 +234,7 @@ Spaceport.BuildingPlacement.mixin({
     this.clearPlacementSilhouettes();
 
     this.selectedBuildingType = null;
-    this.startPlacing = false;
+    this.startedPlacing = false;
     this.isPlacing = false;
 
     this.game.updateToolbarUI();
@@ -244,11 +242,11 @@ Spaceport.BuildingPlacement.mixin({
 
   finishPlacingSelectedBuilding: function() {
     if (!this.isPlacing) return;
-    if (!this.startPlacing) return;
+    if (!this.startedPlacing) return;
 
-    console.log("Placed building from, to ", 
-      this.currentStartPlacementPosition.toString(), 
-      this.currentEndPlacementPosition.toString());
+    // console.log("Placed building from, to ", 
+    //   this.currentStartPlacementPosition.toString(), 
+    //   this.currentEndPlacementPosition.toString());
 
     var buildings = this.generatePlacingBuildings();
     this.game.placeBuildings(buildings);
