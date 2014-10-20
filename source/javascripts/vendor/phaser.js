@@ -50247,7 +50247,7 @@ Phaser.Cache.prototype = {
     * @private
     */
     _resolveUrl: function (url) {
-        this._urlResolver.src = this.game.load.baseUrl + url;
+        this._urlResolver.src = this.game.load.baseURL + url;
 
         this._urlTemp = this._urlResolver.src;
 
@@ -51540,6 +51540,7 @@ Phaser.Loader.prototype = {
         }
 
         var file = this._fileList[this._fileIndex];
+        var fileUrl = this.baseURL + file.url;
         var _this = this;
 
         this.onFileStart.dispatch(this.progress, file.key, file.url);
@@ -51563,7 +51564,7 @@ Phaser.Loader.prototype = {
                 {
                     file.data.crossOrigin = this.crossOrigin;
                 }
-                file.data.src = this.baseURL + file.url;
+                file.data.src = fileUrl;
                 break;
 
             case 'audio':
