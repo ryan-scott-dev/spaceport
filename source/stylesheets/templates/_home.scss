@@ -5,6 +5,7 @@ html {
 }
 
 body {
+  margin: 0px 0px 1px 0px; /* the extra 1px allows the iOS inner/outer check to work */
   height: 100%;
 }
 
@@ -36,7 +37,8 @@ canvas {
     width: 100%;
     height: 60px;
     outline: none;
-    
+    cursor: pointer;
+
     &[disabled] {
       background: gray;
     }
@@ -53,4 +55,19 @@ canvas {
       box-shadow: inset 0 0 3px black;
     }
   }
+}
+
+#orientation {
+    margin: 0 auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url(../assets/orientation.jpg); 
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: rgb(0, 0, 0);
+    z-index: 999;
+    display: none;
 }
