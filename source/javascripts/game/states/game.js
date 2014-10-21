@@ -37,7 +37,8 @@ Spaceport.Game.prototype = {
 
     this.stage.smoothed = false;
     this.stage.backgroundColor = '#2d2d2d';
-    // Look at this.stage.setInteractionDelegate for events on other elements
+
+    // RS: Look at this.stage.setInteractionDelegate for events on other elements
     
     this.marker = this.add.graphics();
     this.marker.lineStyle(2, 0xFFFFFF, 1);
@@ -83,7 +84,7 @@ Spaceport.Game.prototype = {
 
   bindView: function(viewElement) {
     var elementsWithActions = $('[action]', viewElement);
-    elementsWithActions.on('mousedown', function(evt) {
+    elementsWithActions.on('click', function(evt) {
       this.handleElementClicked(evt);
     }.bind(this));
   },
@@ -321,7 +322,9 @@ Spaceport.Game.prototype = {
   },
 
   startPlacingSelectedBuilding: function() {
-    this.buildingPlacement.startPlacingSelectedBuilding();
+    if (this.buildingPlacement) {
+      this.buildingPlacement.startPlacingSelectedBuilding();  
+    }
   },
 
   finishPlacingSelectedBuilding: function() {
