@@ -39,7 +39,7 @@ Spaceport.Config.Buildings = {
     sprite: 'test_floor_sprite',
     components: [],
     tile_size: {x: 1, y: 1},
-    pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
+    pivot: new Phaser.Point((32 * 1), (32 * 1) ),
     placement_behaviours: ['single', 'drag', 'deselect'],
   }
 

@@ -19,7 +19,9 @@ Spaceport.BuildingPlacement = function(params) {
   this._lastEndPlacementPosition = null;
 
   this.startPlacingMarker = this.game.add.sprite(0, 0, 'placement');
+  this.startPlacingMarker.renderOrder = 10;
   this.endPlacingMarker = this.game.add.sprite(0, 0, 'placement');
+  this.endPlacingMarker.renderOrder = 10;
 };
 
 Spaceport.BuildingPlacement.mixin({
@@ -77,7 +79,7 @@ Spaceport.BuildingPlacement.mixin({
     var buildingTileSize = this.lookupBuildingTileSize(this.selectedBuildingType);
     var basePosition = start.clone();
 
-    if (width > height) {      
+    if (width > height) {
       if (start.x > end.x) {
         start = end;
       }
@@ -197,7 +199,8 @@ Spaceport.BuildingPlacement.mixin({
 
       if (startPosition.y != endPosition.y) {
         this.startPlacingMarker.y -= 32;
-      } else {
+      } 
+      if (startPosition.x != endPosition.x) {
         this.startPlacingMarker.x -= 32;
       }
     } else {
