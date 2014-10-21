@@ -345,6 +345,15 @@ Spaceport.Game.prototype = {
     }
   },
 
+  stopPlacingBuilding: function() {
+    if (this.buildingPlacement) {
+      this.buildingPlacement.stopPlacingBuilding();
+
+      this.buildingPlacement.destroy();
+      this.buildingPlacement = null;
+    }
+  },
+
   lookupBuildingPlacementConstructor: function(type) {
     return type.capitalize() + 'BuildingPlacement';
   },
@@ -409,6 +418,8 @@ Spaceport.Game.prototype = {
   },
 
   updateRenderOrder: function() {
+    this.removeBuildingDuplicates();
+
     console.time('updateRenderOrder');
 
     this.world.customSort(function(self, other) {
@@ -423,6 +434,11 @@ Spaceport.Game.prototype = {
     console.timeEnd('updateRenderOrder');
   },
 
+  removeBuildingDuplicates: function() {
+    // Check if there are buildings with the same type, position, and rotation and remove them
+    // An exception exists for floors which there can only be one of that type on each position
+  },
+
   update: function() {
     if (this.inputActions.place.isDown) {
       this.startPlacingSelectedBuilding();
@@ -434,7 +450,7 @@ Spaceport.Game.prototype = {
     }
 
     if (this.inputActions.cancel.isDown && this.inputActions.cancel.repeats == 0) {
-      this.buildingPlacement.stopPlacingBuilding();
+      this.stopPlacingBuilding();
     }
 
     this.updateCamera();
