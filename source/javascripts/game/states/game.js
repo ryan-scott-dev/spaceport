@@ -70,7 +70,7 @@ Spaceport.Game.prototype = {
     this.bindViews('game-toolbar');
 
     this.onAction('select-wall',    function() { this.setSelectedBuildingType('wall');    });
-    this.onAction('select-room',    function() { this.setSelectedBuildingType('room');    });
+    this.onAction('select-floor',   function() { this.setSelectedBuildingType('floor');    });
     this.onAction('select-door',    function() { this.setSelectedBuildingType('door');    });
     this.onAction('select-orbital', function() { this.setSelectedBuildingType('orbital'); });
   },
@@ -123,6 +123,8 @@ Spaceport.Game.prototype = {
   },
 
   saveState: function() {
+    this.updateRenderOrder();
+
     console.time('saveState');
     var state = this.gameState();
     localStorage.setItem('game.state', JSON.stringify(state));
@@ -148,6 +150,8 @@ Spaceport.Game.prototype = {
       building.placed = true;
       this.addBuilding(building);
     }.bind(this));
+
+    this.updateRenderOrder();
   },
 
   addBuilding: function(buildingTemplate) {
@@ -180,6 +184,7 @@ Spaceport.Game.prototype = {
     buildingSprite.type = type;
     buildingSprite.placed = params.placed || false;
     buildingSprite.pivot = params.pivot || this.lookupBuildingPivot(type);
+    buildingSprite.renderOrder = params.renderOrder || this.lookupBuildingRenderOrder(type);
 
     buildingSprite.spWorld = this;
     buildingSprite.graphics = {};
@@ -243,6 +248,10 @@ Spaceport.Game.prototype = {
 
   lookupBuildingPivot: function(type) {
     return Spaceport.Config.Buildings[type].pivot;
+  },
+
+  lookupBuildingRenderOrder: function(type) {
+    return Spaceport.Config.Buildings[type].render_order;
   },
 
   lookupBuildingSprite: function(type) {
@@ -399,6 +408,21 @@ Spaceport.Game.prototype = {
     }
   },
 
+  updateRenderOrder: function() {
+    console.time('updateRenderOrder');
+
+    this.world.customSort(function(self, other) {
+      var selfOrder = self.renderOrder || 0;
+      var otherOrder = other.renderOrder || 0;
+
+      if (selfOrder > otherOrder) return 1;
+      if (selfOrder < otherOrder) return -1;
+      return 0;
+    });
+
+    console.timeEnd('updateRenderOrder');
+  },
+
   update: function() {
     if (this.inputActions.place.isDown) {
       this.startPlacingSelectedBuilding();
@@ -407,26 +431,6 @@ Spaceport.Game.prototype = {
     // Need to find a way to capture the release when the press started on another element
     if (this.inputActions.place.justReleased()) {
       this.finishPlacingSelectedBuilding();
-    }
-
-    if (this.inputActions.place_orbital.isDown && this.inputActions.place_orbital.repeats == 0) {
-      this.setSelectedBuildingType('orbital');
-    }
-
-    // if (this.inputActions.place_room.isDown && this.inputActions.place_room.repeats == 0) {
-    //   this.setSelectedBuildingType('room');
-    // }
-
-    if (this.inputActions.place_wall.isDown && this.inputActions.place_wall.repeats == 0) {
-      this.setSelectedBuildingType('wall');
-    }
-
-    if (this.inputActions.place_door.isDown && this.inputActions.place_door.repeats == 0) {
-      this.setSelectedBuildingType('door');
-    }
-
-    if (this.inputActions.place_loader.isDown && this.inputActions.place_loader.repeats == 0) {
-      this.setSelectedBuildingType('loader');
     }
 
     if (this.inputActions.cancel.isDown && this.inputActions.cancel.repeats == 0) {
