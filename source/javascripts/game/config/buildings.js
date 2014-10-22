@@ -1,6 +1,7 @@
 Spaceport.Config.Buildings = {
 
   orbital: {
+    has_id: true,
     render_order: 1,
     sprite: 'test_wall_sprite',
     components: [],
@@ -9,6 +10,7 @@ Spaceport.Config.Buildings = {
   },
 
   loader: {
+    has_id: true,
     render_order: 1,
     sprite: 'test_wall_sprite',
     components: [Spaceport.Behaviours.Loader],
@@ -17,6 +19,7 @@ Spaceport.Config.Buildings = {
   },
 
   door: {
+    has_id: true,
     render_order: 1,
     rotate_during_placement: true,
     sprite: 'test_door_sprite',
@@ -27,6 +30,7 @@ Spaceport.Config.Buildings = {
   },
 
   wall: {
+    has_id: false,
     render_order: 0,
     rotate_during_placement: true,
     sprite: 'test_wall_sprite',
@@ -37,6 +41,7 @@ Spaceport.Config.Buildings = {
   },
 
   floor: {
+    has_id: false,
     render_order: -1,
     rotate_during_placement: false,
     sprite: 'test_floor_sprite',

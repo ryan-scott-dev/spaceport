@@ -175,11 +175,15 @@ Spaceport.Game.prototype = {
 
   createBuilding: function(params) {
     var type = params.type || 'unknown';
-    var spriteImage = params.sprite || this.lookupBuildingSprite(type)
+    var spriteImage = params.sprite || this.lookupBuildingSprite(type);
     var x = params.x || 0;
     var y = params.y || 0;
     var buildingSprite = this.add.sprite(x, y, spriteImage);
-    buildingSprite.id = params.id || chance.guid();
+    var hasId = this.lookupBuildingHasId(type);
+    if (hasId) {
+      buildingSprite.id = params.id || chance.guid();  
+    }
+    
     buildingSprite.rotation = params.rotation || 0;
     buildingSprite.type = type;
     
@@ -255,6 +259,10 @@ Spaceport.Game.prototype = {
     }
 
     return buildingSprite;  
+  },
+
+  lookupBuildingHasId: function(type) {
+    return Spaceport.Config.Buildings[type].has_id;
   },
 
   lookupBuildingPivot: function(type) {
