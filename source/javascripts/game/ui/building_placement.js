@@ -192,6 +192,24 @@ Spaceport.BuildingPlacement.mixin({
       this.updatePreviousPlacementPosition();
     }
 
+    this.updateMarkerPositions();
+    this.updateMarkerVisibility();
+  },
+
+  updateMarkerVisibility: function() {
+    this.startPlacingMarker.visible = (this.selectedBuildingType != null);
+    this.endPlacingMarker.visible = (this.selectedBuildingType != null);
+  },
+
+  startMarkerOffset: function() {
+    return new Phaser.Point(0, 0);
+  },
+
+  endMarkerOffset: function() {
+    return new Phaser.Point(0, 0);
+  },
+
+  updateMarkerPositions: function() {
     if (this.placingPositions.length > 0) {
       var startPosition = this.placingPositions[0];
       var endPosition = this.placingPositions[this.placingPositions.length - 1];
@@ -200,17 +218,13 @@ Spaceport.BuildingPlacement.mixin({
       var endPosition = startPosition;
     }
 
-    this.startPlacingMarker.x = startPosition.x - 6;
-    this.startPlacingMarker.y = startPosition.y - 6;
+    var startMarkerOffset = this.startMarkerOffset();
+    this.startPlacingMarker.x = startPosition.x - 6 + startMarkerOffset.x;
+    this.startPlacingMarker.y = startPosition.y - 6 + startMarkerOffset.y;
 
-    this.endPlacingMarker.x = endPosition.x - 6 + 32;
-    this.endPlacingMarker.y = endPosition.y - 6 + 32;  
-
-    this.startPlacingMarker.visible = (this.selectedBuildingType != null);
-    this.endPlacingMarker.visible = (this.selectedBuildingType != null && 
-                                     this.currentEndPlacementPosition != undefined &&
-                                     this.placingPositions.length > 1);
-
+    var endMarkerOffset = this.endMarkerOffset();
+    this.endPlacingMarker.x = endPosition.x - 6 + endMarkerOffset.x;
+    this.endPlacingMarker.y = endPosition.y - 6 + endMarkerOffset.y;  
   },
 
   startPlacingSelectedBuilding: function() {

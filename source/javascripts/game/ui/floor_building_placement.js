@@ -5,6 +5,10 @@ Spaceport.FloorBuildingPlacement = function(params) {
 Spaceport.FloorBuildingPlacement.mixin(Spaceport.BuildingPlacement.prototype);
 
 Spaceport.FloorBuildingPlacement.mixin({
+  endMarkerOffset: function() {
+    return new Phaser.Point(32, 32);
+  },
+
   calculatePlacingPositions: function() {
     // Find the dominate axis
     var startPos = this.currentStartPlacementPosition;
