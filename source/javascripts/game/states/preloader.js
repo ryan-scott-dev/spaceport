@@ -10,7 +10,6 @@ Spaceport.Preloader = function (game) {
 Spaceport.Preloader.prototype = {
 
   preload: function () {
-
     this.preloadBar = this.add.sprite(0, 100, 'preloaderBar');
 
     this.load.setPreloadSprite(this.preloadBar);
@@ -19,6 +18,7 @@ Spaceport.Preloader.prototype = {
     this.load.image('test_door_sprite', '/assets/door.png');
     this.load.image('test_wall_sprite', '/assets/wall.png');
     this.load.image('test_floor_sprite', '/assets/floor.png');
+    this.load.image('test_dock_sprite', '/assets/dock.png');
 
     this.load.image('placement', '/assets/placement.png');
   },
@@ -29,6 +29,7 @@ Spaceport.Preloader.prototype = {
 
     this.state.start('Game');
 
+    $('.game__ui').addClass('loaded');
   },
 
   update: function () {

@@ -72,7 +72,7 @@ Spaceport.Game.prototype = {
     this.onAction('select-wall',    function() { this.setSelectedBuildingType('wall');    });
     this.onAction('select-floor',   function() { this.setSelectedBuildingType('floor');    });
     this.onAction('select-door',    function() { this.setSelectedBuildingType('door');    });
-    this.onAction('select-orbital', function() { this.setSelectedBuildingType('orbital'); });
+    this.onAction('select-dock', function() { this.setSelectedBuildingType('dock'); });
   },
 
   bindViews: function() {

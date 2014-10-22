@@ -1,9 +1,10 @@
 Spaceport.Config.Buildings = {
 
-  orbital: {
+  dock: {
     has_id: true,
     render_order: 1,
-    sprite: 'test_wall_sprite',
+    sprite: 'test_dock_sprite',
+    tile_size: {x: 3, y: 5},
     components: [],
     pivot: new Phaser.Point((32 * 3) / 2, (32 * 5) / 2),
     placement_behaviours: ['single', 'deselect'],

@@ -9,6 +9,15 @@ body {
   height: 100%;
 }
 
+.game__ui {
+  
+  display: none;
+
+  &.loaded {
+    display: block;
+  }
+}
+
 .canvas_container {
   display: flex;
   height: 100%;
