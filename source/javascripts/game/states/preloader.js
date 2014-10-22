@@ -19,6 +19,7 @@ Spaceport.Preloader.prototype = {
     this.load.image('test_wall_sprite', '/assets/wall.png');
     this.load.image('test_floor_sprite', '/assets/floor.png');
     this.load.image('test_dock_sprite', '/assets/dock.png');
+    this.load.image('ship_cargo_sprite', '/assets/ship_cargo.png');
 
     this.load.image('placement', '/assets/placement.png');
   },

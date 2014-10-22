@@ -3,6 +3,7 @@ Spaceport.Game = function (game) {
   /* logic */
   this.buildings;
   this.robots;
+  this.ships;
 
 
   /* Building Placement */
@@ -28,6 +29,7 @@ Spaceport.Game.prototype = {
 
     this.buildings = [];
     this.robots = [];
+    this.ships = [];
 
     this.map = this.add.tilemap();
     this.map.addTilesetImage('tiles');
@@ -165,6 +167,17 @@ Spaceport.Game.prototype = {
     return buildingSprite;
   },
 
+  addShip: function(params) {
+    var newShip = this.createShip(params);
+    this.ships.push(newShip);
+  },
+
+  createShip: function(params) {
+    var shipSprite = new Spaceport.Ship(this, params);
+    this.world.add(shipSprite);
+    return shipSprite;
+  },
+
   lookupBuildingPlacementBehaviours: function(type) {
     return Spaceport.Config.Buildings[type].placement_behaviours;
   },
@@ -299,6 +312,29 @@ Spaceport.Game.prototype = {
     // An exception exists for floors which there can only be one of that type on each position
   },
 
+  spawnShipForDock: function(dock) {
+    var x = dock.x;
+    var y = this.map.heightInPixels;
+    var ship = this.addShip({ type: 'cargo', x: x, y: y, assignedDock: dock });
+    return ship;
+  },
+
+  spawnShips: function() {
+    // If there are any docks that are placed which don't have an assigned ship
+    var docks = this.buildings.filter(function(building) {
+      return building.type == 'dock';
+    });
+
+    var unassignedDocks = docks.filter(function(dock) {
+      return dock.assignedShip == null;
+    });
+
+    unassignedDocks.forEach(function(unassignedDock) {
+      // Spawn a new ship at the bottom of the map, assigned to the dock
+      this.spawnShipForDock(unassignedDock);  
+    }.bind(this));
+  },
+
   update: function() {
     if (this.inputActions.place.isDown) {
       this.startPlacingSelectedBuilding();
@@ -316,6 +352,8 @@ Spaceport.Game.prototype = {
     this.updateCamera();
     this.updateBuildingPlacement();
     this.updateMarker();
+
+    this.spawnShips();
   }
 
 };
