@@ -159,20 +159,6 @@ Spaceport.Game.prototype = {
     this.buildings.push(newBuilding);
   },
 
-  addRobot: function(robotTemplate) {
-    var newRobot = this.createCargoRobot(robotTemplate); 
-    this.robots.push(newRobot);
-  },
-
-  addNewRobot: function(robot) {
-    this.robots.push(robot);
-    this.saveState();
-  },
-
-  findRobot: function(id) {
-    return this.robots.find(function(robot) { return robot.id == id; } );
-  },
-
   createBuilding: function(params) {
     var buildingSprite = new Spaceport.Building(this, params);
     this.world.add(buildingSprite);
@@ -181,49 +167,6 @@ Spaceport.Game.prototype = {
 
   lookupBuildingPlacementBehaviours: function(type) {
     return Spaceport.Config.Buildings[type].placement_behaviours;
-  },
-
-  createCargoRobot: function(params) {
-    var robot = this.add.graphics();
-    robot.id = params.id || chance.guid();
-    robot.x = params.x || 0;
-    robot.y = params.y || 0;
-    robot.rotation = params.rotation || 0;
-    robot.type = 'cargo';
-    robot.pivot.x = (32 * 1) / 2;
-    robot.pivot.y = (32 * 1) / 2;
-
-    robot.lineStyle(1, 0x1BFFA2, 1);
-    robot.drawRect(3, 3, 26, 26);
-
-    robot.serialize = function() {
-      return {
-        id: this.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-    };
-
-    robot.isIdle = function() {
-      return true;
-    };
-
-    robot.broadcastLookingForWork = function() {
-      if (this._hasBroadcastedLookingForWork) return;
-
-      this._hasBroadcastedLookingForWork = true;
-      console.log('Beep - Looking for work!');  
-    };
-
-    robot.update = function() {
-      if (this.isIdle()) {
-        this.broadcastLookingForWork();
-      }
-    };
-
-    return robot;
   },
 
   updateMarker: function () {
