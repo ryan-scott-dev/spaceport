@@ -49,7 +49,6 @@ Spaceport.FloorBuildingPlacement.mixin({
       }
     }
 
-    console.log(placingPositions.length);
     return placingPositions;
   },
 });
