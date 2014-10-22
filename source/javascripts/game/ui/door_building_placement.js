@@ -10,7 +10,7 @@ Spaceport.DoorBuildingPlacement.mixin({
 
     // Find the dominate axis
     var startPos = this.currentStartPlacementPosition;
-    var endPos = this.currentEndPlacementPosition || new Phaser.Point(startPos.x + 32, startPos.y);
+    var endPos = this.currentEndPlacementPosition || new Phaser.Point(startPos.x + 96, startPos.y);
 
     var start = startPos.clone();
     var end = endPos.clone();

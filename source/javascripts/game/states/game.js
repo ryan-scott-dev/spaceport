@@ -182,13 +182,24 @@ Spaceport.Game.prototype = {
     buildingSprite.id = params.id || chance.guid();
     buildingSprite.rotation = params.rotation || 0;
     buildingSprite.type = type;
-    buildingSprite.placed = params.placed || false;
+    
     buildingSprite.pivot = params.pivot || this.lookupBuildingPivot(type);
     buildingSprite.renderOrder = params.renderOrder || this.lookupBuildingRenderOrder(type);
 
     buildingSprite.spWorld = this;
     buildingSprite.graphics = {};
     buildingSprite._behaviours = [];
+
+    buildingSprite.setPlaced = function(placed) {
+      buildingSprite.placed = placed;
+      if (!buildingSprite.placed) {
+        buildingSprite.tint = 0x1BFF1B;
+      } else {
+        buildingSprite.tint = 0xFFFFFF;
+      }
+    };
+
+    buildingSprite.setPlaced(params.placed || false);
 
     buildingSprite.serialize = function() {
       var properties = {
@@ -323,7 +334,7 @@ Spaceport.Game.prototype = {
 
   placeBuildings: function(buildings) {
     buildings.forEach(function(building) {
-      building.placed = true;
+      building.setPlaced(true);
       this.addBuilding(building);
     }.bind(this));
     
