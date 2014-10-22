@@ -174,91 +174,9 @@ Spaceport.Game.prototype = {
   },
 
   createBuilding: function(params) {
-    var type = params.type || 'unknown';
-    var spriteImage = params.sprite || this.lookupBuildingSprite(type);
-    var x = params.x || 0;
-    var y = params.y || 0;
-    var buildingSprite = this.add.sprite(x, y, spriteImage);
-    var hasId = this.lookupBuildingHasId(type);
-    if (hasId) {
-      buildingSprite.id = params.id || chance.guid();  
-    }
-    
-    buildingSprite.rotation = params.rotation || 0;
-    buildingSprite.type = type;
-    
-    buildingSprite.pivot = params.pivot || this.lookupBuildingPivot(type);
-    buildingSprite.renderOrder = params.renderOrder || this.lookupBuildingRenderOrder(type);
-
-    buildingSprite.spWorld = this;
-    buildingSprite.graphics = {};
-    buildingSprite._behaviours = [];
-
-    buildingSprite.setPlaced = function(placed) {
-      buildingSprite.placed = placed;
-      if (!buildingSprite.placed) {
-        buildingSprite.tint = 0x1BFF1B;
-      } else {
-        buildingSprite.tint = 0xFFFFFF;
-      }
-    };
-
-    buildingSprite.setPlaced(params.placed || false);
-
-    buildingSprite.serialize = function() {
-      var properties = {
-        id: this.id,
-        type: this.type,
-        x: this.x,
-        y: this.y,
-        rotation: this.rotation,
-      };
-
-      var self = this;
-      this._behaviours.forEach(function(behaviour) {
-        var customProperties = behaviour.getProperties ? behaviour.getProperties.call(self) : {};
-        for(var property in customProperties) {
-          properties[property] = customProperties[property];
-        }
-      });
-      
-      return properties;
-    };
-
-    buildingSprite.addBehaviour = function(behaviour) {
-      this._behaviours.push(behaviour);
-
-      for (var property in behaviour) {
-        if (behaviour.hasOwnProperty(property)) {
-          this[property] = behaviour[property];
-        }
-      }
-    };
-
-    buildingSprite.update = function() {
-      this._behaviours.filter(function(behaviour) {
-        return !!behaviour.update;
-      })
-      .forEach(function(behaviour) {
-        behaviour.update.call(buildingSprite);
-      });
-    };
-
-    var behaviours = this.lookupBuildingBehaviours(params.type);
-    if (behaviours) {
-      behaviours.forEach(function(behaviour) {
-        buildingSprite.addBehaviour(behaviour);
-      });
-
-      behaviours.filter(function(behaviour) {
-        return !!behaviour.create;
-      })
-      .forEach(function(behaviour) {
-        behaviour.create.call(buildingSprite, params);
-      }.bind(this));
-    }
-
-    return buildingSprite;  
+    var buildingSprite = new Spaceport.Building(this, params);
+    this.world.add(buildingSprite);
+    return buildingSprite;
   },
 
   lookupBuildingHasId: function(type) {
