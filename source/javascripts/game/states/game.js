@@ -155,7 +155,7 @@ Spaceport.Game.prototype = {
   },
 
   addBuilding: function(buildingTemplate) {
-    var newBuilding = this.createBuilding(buildingTemplate); 
+    var newBuilding = this.createBuilding(buildingTemplate);
     this.buildings.push(newBuilding);
   },
 
@@ -177,26 +177,6 @@ Spaceport.Game.prototype = {
     var buildingSprite = new Spaceport.Building(this, params);
     this.world.add(buildingSprite);
     return buildingSprite;
-  },
-
-  lookupBuildingHasId: function(type) {
-    return Spaceport.Config.Buildings[type].has_id;
-  },
-
-  lookupBuildingPivot: function(type) {
-    return Spaceport.Config.Buildings[type].pivot;
-  },
-
-  lookupBuildingRenderOrder: function(type) {
-    return Spaceport.Config.Buildings[type].render_order;
-  },
-
-  lookupBuildingSprite: function(type) {
-    return Spaceport.Config.Buildings[type].sprite;
-  },
-
-  lookupBuildingBehaviours: function(type) {
-    return Spaceport.Config.Buildings[type].components;
   },
 
   lookupBuildingPlacementBehaviours: function(type) {
