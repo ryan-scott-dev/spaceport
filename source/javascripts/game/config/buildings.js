@@ -18,6 +18,7 @@ Spaceport.Config.Buildings = {
 
   door: {
     render_order: 1,
+    rotate_during_placement: true,
     sprite: 'test_door_sprite',
     components: [],
     tile_size: {x: 3, y: 1},
@@ -27,6 +28,7 @@ Spaceport.Config.Buildings = {
 
   wall: {
     render_order: 0,
+    rotate_during_placement: true,
     sprite: 'test_wall_sprite',
     components: [],
     tile_size: {x: 1, y: 1},
@@ -36,10 +38,11 @@ Spaceport.Config.Buildings = {
 
   floor: {
     render_order: -1,
+    rotate_during_placement: false,
     sprite: 'test_floor_sprite',
     components: [],
     tile_size: {x: 1, y: 1},
-    pivot: new Phaser.Point((32 * 1), (32 * 1) ),
+    pivot: new Phaser.Point((32 * 1) / 2, (32 * 1) / 2),
     placement_behaviours: ['single', 'drag', 'deselect'],
   }
 

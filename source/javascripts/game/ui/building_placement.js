@@ -38,6 +38,10 @@ Spaceport.BuildingPlacement.mixin({
     return Spaceport.Config.Buildings[type].tile_size;
   },
 
+  lookupBuildingRotateDuringPlacement: function(type) {
+    return Spaceport.Config.Buildings[type].rotate_during_placement;
+  },
+
   isPlacingStartPosition: function() {
     return this.isPlacing && !this.startedPlacing;
   },
@@ -125,6 +129,7 @@ Spaceport.BuildingPlacement.mixin({
     var startPosition = this.currentStartPlacementPosition;
     var endPosition = startPosition;
     var rotate = false;
+    var rotatesDuringPlacement = this.lookupBuildingRotateDuringPlacement(buildingType);;
 
     if (this.placingPositions.length > 1) {
       startPosition = this.placingPositions[0]; 
@@ -136,11 +141,11 @@ Spaceport.BuildingPlacement.mixin({
       // Generate new building at the placement position
       var buildingParams = {
         type: buildingType, 
-        x: placementPosition.x - 16, 
+        x: placementPosition.x + 16, 
         y: placementPosition.y + 16,
       };
 
-      if (rotate) {
+      if (rotate && rotatesDuringPlacement) {
         buildingParams.rotation = Math.PI / 2;
         buildingParams.y = placementPosition.y - 16;
       }
@@ -187,27 +192,19 @@ Spaceport.BuildingPlacement.mixin({
       this.updatePreviousPlacementPosition();
     }
 
-    if (this.placingPositions.length > 1) {
+    if (this.placingPositions.length > 0) {
       var startPosition = this.placingPositions[0];
       var endPosition = this.placingPositions[this.placingPositions.length - 1];
-
-      this.startPlacingMarker.x = startPosition.x - 6;
-      this.startPlacingMarker.y = startPosition.y - 6;
-
-      this.endPlacingMarker.x = endPosition.x - 6;
-      this.endPlacingMarker.y = endPosition.y - 6;  
-
-      if (startPosition.y != endPosition.y) {
-        this.startPlacingMarker.y -= 32;
-      } 
-      if (startPosition.x != endPosition.x) {
-        this.startPlacingMarker.x -= 32;
-      }
     } else {
-      var currentPosition = (this.currentStartPlacementPosition || new Phaser.Point()).clone();
-      this.startPlacingMarker.x = currentPosition.x - 6;
-      this.startPlacingMarker.y = currentPosition.y - 6; 
+      var startPosition = (this.currentStartPlacementPosition || new Phaser.Point()).clone();
+      var endPosition = startPosition;
     }
+
+    this.startPlacingMarker.x = startPosition.x - 6;
+    this.startPlacingMarker.y = startPosition.y - 6;
+
+    this.endPlacingMarker.x = endPosition.x - 6 + 32;
+    this.endPlacingMarker.y = endPosition.y - 6 + 32;  
 
     this.startPlacingMarker.visible = (this.selectedBuildingType != null);
     this.endPlacingMarker.visible = (this.selectedBuildingType != null && 

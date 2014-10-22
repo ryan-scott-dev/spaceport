@@ -8,7 +8,7 @@ Spaceport.FloorBuildingPlacement.mixin({
   calculatePlacingPositions: function() {
     // Find the dominate axis
     var startPos = this.currentStartPlacementPosition;
-    var endPos = this.currentEndPlacementPosition || startPos;
+    var endPos = this.currentEndPlacementPosition || new Phaser.Point(startPos.x + 32, startPos.y + 32);
 
     var start = startPos.clone();
     var end = endPos.clone();
@@ -36,15 +36,16 @@ Spaceport.FloorBuildingPlacement.mixin({
     var numberOfBuildingsAcross = Math.floor(width / buildingWidth);
     var numberOfBuildingsDown = Math.floor(height / buildingHeight);
 
-    for (var x = 1; x <= numberOfBuildingsAcross && numberOfBuildingsAcross > 0; x++) {
-      for (var y = 1; y <= numberOfBuildingsDown && numberOfBuildingsDown > 0; y++) {
+    for (var x = 0; x < numberOfBuildingsAcross; x++) {
+      for (var y = 0; y < numberOfBuildingsDown; y++) {
         var buildingPosition = basePosition.clone();
         buildingPosition.x = start.x + (x * buildingWidth);
         buildingPosition.y = start.y + (y * buildingHeight);
         placingPositions.push(buildingPosition);
       }
     }
-    
+
+    console.log(placingPositions.length);
     return placingPositions;
   },
 });
