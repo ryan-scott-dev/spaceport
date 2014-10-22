@@ -36,7 +36,7 @@ Spaceport.Game.prototype = {
     this.layer.resizeWorld();
 
     this.stage.smoothed = false;
-    this.stage.backgroundColor = '#2d2d2d';
+    this.stage.backgroundColor = '#1A1A1A';
 
     // RS: Look at this.stage.setInteractionDelegate for events on other elements
     
