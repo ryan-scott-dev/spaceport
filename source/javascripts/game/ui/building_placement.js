@@ -71,57 +71,6 @@ Spaceport.BuildingPlacement.mixin({
     this.placementSilhouettes.length = 0;
   },
 
-  calculatePlacingPositions: function() {
-    // Find the dominate axis
-    var start = this.currentStartPlacementPosition;
-    var end = this.currentEndPlacementPosition || start;
-
-    var placementZone = new Phaser.Rectangle(start.x, start.y,  start.x - end.x, end.y - start.y);
-    var width = Math.abs(placementZone.width);
-    var height = Math.abs(placementZone.height);
-    var placingPositions = [];
-    var buildingTileSize = this.lookupBuildingTileSize(this.selectedBuildingType);
-    var basePosition = start.clone();
-
-    if (width > height) {
-      if (start.x > end.x) {
-        start = end;
-      }
-
-      var buildingWidth = 32 * buildingTileSize.x;
-      var buildingHeight = 32 * buildingTileSize.y;
-      
-      // Width is the dominate axis
-      var numberOfBuildings = Math.floor(width / buildingWidth);
-      
-      // Determine how many buildings can be fit....
-      for (var i = 1; i <= numberOfBuildings && numberOfBuildings > 0; i++) {
-        var buildingPosition = basePosition.clone();
-        buildingPosition.x = start.x + (i * buildingWidth);
-        placingPositions.push(buildingPosition);
-      }
-
-    } else {
-      var buildingWidth = 32 * buildingTileSize.y;
-      var buildingHeight = 32 * buildingTileSize.x;
-
-      // Height is the dominate axis
-      var numberOfBuildings = Math.floor(height / buildingHeight);
-      if (start.y > end.y) {
-        start = end;
-      }
-
-      // Determine how many buildings can be fit....
-      for (var i = 1; i <= numberOfBuildings && numberOfBuildings > 0; i++) {
-        var buildingPosition = basePosition.clone();
-        buildingPosition.y = start.y + (i * buildingHeight);
-        placingPositions.push(buildingPosition);
-      }
-    }
-
-    return placingPositions;
-  },
-
   generatePlacingBuildings: function() {
     this.placingPositions = this.calculatePlacingPositions();
     var buildingType = this.selectedBuildingType;
@@ -146,7 +95,8 @@ Spaceport.BuildingPlacement.mixin({
       };
 
       if (rotate && rotatesDuringPlacement) {
-        buildingParams.rotation = Math.PI / 2;
+        buildingParams.rotation = -Math.PI / 2;
+        buildingParams.x = placementPosition.x + 48;
         buildingParams.y = placementPosition.y - 16;
       }
 
