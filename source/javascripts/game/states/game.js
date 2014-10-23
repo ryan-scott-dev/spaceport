@@ -40,6 +40,8 @@ Spaceport.Game.prototype = {
     this.stage.smoothed = false;
     this.stage.backgroundColor = '#1A1A1A';
 
+    this.physics.startSystem(Phaser.Physics.ARCADE);
+
     // RS: Look at this.stage.setInteractionDelegate for events on other elements
     
     this.marker = this.add.graphics();
@@ -314,7 +316,7 @@ Spaceport.Game.prototype = {
 
   spawnShipForDock: function(dock) {
     var x = dock.x;
-    var y = this.map.heightInPixels;
+    var y = this.map.heightInPixels + 300;
     var ship = this.addShip({ type: 'cargo', x: x, y: y, assignedDock: dock });
     return ship;
   },

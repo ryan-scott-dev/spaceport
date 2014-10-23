@@ -8,6 +8,8 @@ Spaceport.Ship = function (game, params) {
   
   Phaser.Sprite.call(this, game, x, y, spriteImage);
 
+  game.physics.arcade.enable(this);
+
   if (config.has_id) {
     this.id = params.id || chance.guid();  
   }
@@ -19,6 +21,9 @@ Spaceport.Ship = function (game, params) {
   if (this.assignedDock) {
     this.assignedDock.assignedShip = this;
   }
+
+  this.state = 'arrived';
+  this.exitPoint = params.exitPoint || new Phaser.Point(x, y);
 
   this.pivot = params.pivot || config.pivot;
   this.renderOrder = params.renderOrder || config.render_order;
@@ -44,7 +49,7 @@ Spaceport.Ship = function (game, params) {
 Spaceport.Ship.prototype = Object.create(Phaser.Sprite.prototype);
 Spaceport.Ship.prototype.constructor = Spaceport.Ship;
 
-Spaceport.Building.mixin({
+Spaceport.Ship.mixin({
 
   serialize: function() {
     var properties = {
