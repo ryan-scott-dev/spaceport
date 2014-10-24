@@ -383,7 +383,7 @@ Spaceport.Game.prototype = {
     this.updateBuildingPlacement();
     this.updateMarker();
 
-    this.updateSaveTimer();
+    // this.updateSaveTimer();
 
     this.spawnShips();
   }
