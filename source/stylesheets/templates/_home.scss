@@ -29,13 +29,14 @@ canvas {
 
 .toolbar_container {
   width: 60px;
-  height: 300px;
+  
   background: white;
   position: absolute;
   left: 20px;
   top: 20px;
   padding: 6px 0;
   border-radius: 6px;
+  padding-bottom: 30px;
 
   button {
     border: none;
