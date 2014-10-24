@@ -39,9 +39,12 @@ Spaceport.Behaviours.MoveTowards = {
           this.dockTimer = 0;
         }
         if (this.state == 'leaving') {
-          this.assignedDock.assignedShip = null;
-          this.assignedDock = null;
-
+          if (this.assignedDock) {
+            this.assignedDock.assignedShip = null;
+            this.assignedDock = null;  
+          }
+          
+          this.game.removeShip(this);
           this.destroy();
         }
       }

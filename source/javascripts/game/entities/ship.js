@@ -17,16 +17,24 @@ Spaceport.Ship = function (game, params) {
   this.rotation = params.rotation || 0;
   this.type = type;
   
-  this.assignedDock = params.assignedDock;
+  var assignedDockId = params.assignedDockId;
+  if (assignedDockId) {
+    params.assignedDock = this.game.findBuildingById(assignedDockId);
+  }
+  this.assignedDock = params.assignedDock || params.assignedDockId;
   if (this.assignedDock) {
     this.assignedDock.assignedShip = this;
   }
 
-  this.state = 'arrived';
+  this.state = params.state || 'arrived';
+  if (params.exitPointX && params.exitPointY) {
+   params.exitPoint = new Phaser.Point(params.exitPointX, params.exitPointY); 
+  }
   this.exitPoint = params.exitPoint || new Phaser.Point(x, y);
 
   this.pivot = params.pivot || config.pivot;
   this.renderOrder = params.renderOrder || config.render_order;
+  this.dockTimer = params.dockTimer || 0;
 
   this.behaviours = [];
 
@@ -51,6 +59,11 @@ Spaceport.Ship.prototype.constructor = Spaceport.Ship;
 
 Spaceport.Ship.mixin({
 
+  getAssignedDockId: function() {
+    if (!this.assignedDock) return null;
+    return this.assignedDock.id;
+  },
+
   serialize: function() {
     var properties = {
       id: this.id,
@@ -58,6 +71,14 @@ Spaceport.Ship.mixin({
       x: this.x,
       y: this.y,
       rotation: this.rotation,
+
+      state: this.state,
+      assignedDockId: this.getAssignedDockId(),
+
+      exitPointX: this.exitPoint.x,
+      exitPointY: this.exitPoint.y,
+
+      dockTimer: this.dockTimer
     };
 
     this.behaviours.forEach(function(behaviour) {

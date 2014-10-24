@@ -5,6 +5,7 @@ Spaceport.Game = function (game) {
   this.robots;
   this.ships;
 
+  this.saveTimerElapsed;
 
   /* Building Placement */
   this.buildingPlacement;
@@ -30,6 +31,8 @@ Spaceport.Game.prototype = {
     this.buildings = [];
     this.robots = [];
     this.ships = [];
+    
+    this.saveTimerElapsed = 0;
 
     this.map = this.add.tilemap();
     this.map.addTilesetImage('tiles');
@@ -138,13 +141,15 @@ Spaceport.Game.prototype = {
   gameState: function() {
     return {
       buildings: this.buildings.map(function(building) { return building.serialize(); }),
-      robots: this.robots.map(function(robot) { return robot.serialize(); })
+      robots: this.robots.map(function(robot) { return robot.serialize(); }),
+      ships: this.ships.map(function(ship) { return ship.serialize(); })
     }
   },
 
   fromGameState: function(state) {
     state.buildings = state.buildings || [];
     state.robots = state.robots || [];
+    state.ships = state.ships || [];
 
     state.robots.forEach(function(robot) {
       this.addRobot(robot);
@@ -155,7 +160,15 @@ Spaceport.Game.prototype = {
       this.addBuilding(building);
     }.bind(this));
 
+    state.ships.forEach(function(ship) {
+      this.addShip(ship);
+    }.bind(this));
+
     this.updateRenderOrder();
+  },
+
+  findBuildingById: function(id) {
+    return this.buildings.find(function(building) { return building.id == id; } );
   },
 
   addBuilding: function(buildingTemplate) {
@@ -178,6 +191,13 @@ Spaceport.Game.prototype = {
     var shipSprite = new Spaceport.Ship(this, params);
     this.world.add(shipSprite);
     return shipSprite;
+  },
+
+  removeShip: function(ship) {
+    var shipIndex = this.ships.indexOf(ship);
+    if (shipIndex < 0) return;
+    
+    this.ships.splice(shipIndex, 1);
   },
 
   lookupBuildingPlacementBehaviours: function(type) {
@@ -337,6 +357,14 @@ Spaceport.Game.prototype = {
     }.bind(this));
   },
 
+  updateSaveTimer: function() {
+    this.saveTimerElapsed += this.time.elapsed;
+    if (this.saveTimerElapsed > 3000) {
+      this.saveState();
+      this.saveTimerElapsed = 0;
+    }
+  },
+
   update: function() {
     if (this.inputActions.place.isDown) {
       this.startPlacingSelectedBuilding();
@@ -354,6 +382,8 @@ Spaceport.Game.prototype = {
     this.updateCamera();
     this.updateBuildingPlacement();
     this.updateMarker();
+
+    this.updateSaveTimer();
 
     this.spawnShips();
   }
